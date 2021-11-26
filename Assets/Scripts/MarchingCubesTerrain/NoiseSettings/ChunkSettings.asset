@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923f7de657f9d62459030431de65108e, type: 3}
+  m_Name: ChunkSettings
+  m_EditorClassIdentifier: 
+  occlusion: 0
+  limitThreads: 0
+  seed: 255
+  viewDistance: 300
+  maxNumberOfThreadsPerFrame: 3
+  chunkScale: 1
+  NoiseLayers:
+  - enabled: 1
+    useFirstLayerAsMask: 0
+    noiseSettings:
+      strength: 0.91
+      numLayers: 2
+      baseRoughness: 0.88
+      roughness: 10.82
+      persistence: 1.68
+      minValue: 0
+  - enabled: 0
+    useFirstLayerAsMask: 1
+    noiseSettings:
+      strength: 0.4
+      numLayers: 8
+      baseRoughness: 1.64
+      roughness: 6.87
+      persistence: 1.152
+      minValue: 3.39
+  chunkHeight: 200
+  chunkwidth: 10
+  worldHeight: 200
+  amp: 3
+  freq: 0.1
+  terrainSurface: 0.5
+  smoothTerrain: 0
+  flatShading: 1
+  allowEditing: 0
+  editingRadious: 2
