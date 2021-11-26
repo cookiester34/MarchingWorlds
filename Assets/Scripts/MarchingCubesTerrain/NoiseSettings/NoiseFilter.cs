@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NoiseFilter
 {
-    Noise _noise = new();
+    Noise _noise = new Noise();
     readonly NoiseSettings _settings;
 
     public NoiseFilter(NoiseSettings settings)

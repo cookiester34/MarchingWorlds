@@ -3,16 +3,14 @@ using UnityEngine;
 public static class ChunkData
 {
 	public static readonly Vector3Int[] CornerTable = {
-
-		new(0, 0, 0),
-		new(1, 0, 0),
-		new(1, 1, 0),
-		new(0, 1, 0),
-		new(0, 0, 1),
-		new(1, 0, 1),
-		new(1, 1, 1),
-		new(0, 1, 1)
-
+		new Vector3Int(0, 0, 0),
+		new Vector3Int(1, 0, 0),
+		new Vector3Int(1, 1, 0),
+		new Vector3Int(0, 1, 0),
+		new Vector3Int(0, 0, 1),
+		new Vector3Int(1, 0, 1),
+		new Vector3Int(1, 1, 1),
+		new Vector3Int(0, 1, 1)
 	};
 
 	public static readonly int[,] EdgeIndexes = {

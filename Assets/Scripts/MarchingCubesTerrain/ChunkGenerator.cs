@@ -143,11 +143,11 @@ public class ChunkGenerator : MonoBehaviour
         var screenPoint4 = cam.WorldToViewportPoint(pos + new Vector3(0, 0, width));
         var screenPoint5 = cam.WorldToViewportPoint(pos + new Vector3(-width, 0, -width));
         
-        return screenPoint1.z > 0 && screenPoint1.x is > 0 and < 1|| 
-               screenPoint2.z > 0 && screenPoint2.x is > 0 and < 1||
-               screenPoint3.z > 0 && screenPoint3.x is > 0 and < 1||
-               screenPoint4.z > 0 && screenPoint4.x is > 0 and < 1||
-               screenPoint5.z > 0 && screenPoint5.x is > 0 and < 1;
+        return screenPoint1.z > 0 && screenPoint1.x > 0 && screenPoint1.x < 1|| 
+               screenPoint2.z > 0 && screenPoint2.x > 0 && screenPoint2.x < 1||
+               screenPoint3.z > 0 && screenPoint3.x > 0 && screenPoint3.x < 1||
+               screenPoint4.z > 0 && screenPoint4.x > 0 && screenPoint4.x < 1||
+               screenPoint5.z > 0 && screenPoint5.x > 0 && screenPoint5.x < 1;
     }
 
     private void EditTerrainHold()

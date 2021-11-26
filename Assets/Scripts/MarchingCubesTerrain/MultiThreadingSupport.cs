@@ -22,7 +22,7 @@ public class MultiThreadingSupport : MonoBehaviour
 
 	private int maxThreads = 50;
 	public int currentThreads = 0;
-	public readonly List<Chunk> QueueToThread = new();
+	public readonly List<Chunk> QueueToThread = new List<Chunk>();
 
 	private void RequestThreading()
 	{
@@ -158,8 +158,8 @@ public class MultiThreadingSupport : MonoBehaviour
 
     public class MeshData
 	{
-		public readonly List<Vector3> Vertices = new();
-		public readonly List<int> Triangles = new();
+		public readonly List<Vector3> Vertices = new List<Vector3>();
+		public readonly List<int> Triangles = new List<int>();
 		public float[] TerrainMap = new float[36443];
 	}
 
@@ -275,7 +275,7 @@ public class MultiThreadingSupport : MonoBehaviour
 			var configIndex = configurationIndex;
 
 			// If the configuration of this cube is 0 or 255 (completely inside the terrain or completely outside of it) we don't need to do anything.
-			if (configIndex is 0 or 255) continue;
+			if (configIndex == 0 || configIndex == 255) continue;
 
 			// Loop through the triangles. There are never more than 5 triangles to a cube and only three vertices to a triangle.
 			var edgeIndex = 0;
