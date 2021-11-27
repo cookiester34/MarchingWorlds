@@ -22,26 +22,26 @@ MonoBehaviour:
   - enabled: 1
     useFirstLayerAsMask: 0
     noiseSettings:
-      strength: 0.91
+      strength: 0.37
       numLayers: 2
-      baseRoughness: 0.88
-      roughness: 10.82
-      persistence: 1.68
-      minValue: 0
-  - enabled: 0
+      baseRoughness: 1.32
+      roughness: 8.24
+      persistence: 2
+      minValue: 0.62
+  - enabled: 1
     useFirstLayerAsMask: 1
     noiseSettings:
       strength: 0.4
-      numLayers: 8
+      numLayers: 2
       baseRoughness: 1.64
-      roughness: 6.87
-      persistence: 1.152
-      minValue: 3.39
+      roughness: 5.56
+      persistence: 1.148
+      minValue: 0.3
   chunkHeight: 200
   chunkwidth: 10
   worldHeight: 200
   amp: 3
-  freq: 0.1
+  freq: 0.1317
   terrainSurface: 0.5
   smoothTerrain: 0
   flatShading: 1

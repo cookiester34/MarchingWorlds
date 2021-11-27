@@ -10,7 +10,7 @@ public class ChunkSettings : ScriptableObject
 	public int seed = 225;
 	[Range(10, 300)]
 	public int viewDistance = 10;
-	[Range(1, 3)]
+	[Range(1, 12)]
 	public int maxNumberOfThreadsPerFrame = 5;
 	[HideInInspector]
     public int chunkScale = 1;

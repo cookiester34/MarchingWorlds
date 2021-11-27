@@ -231,13 +231,24 @@ public class MultiThreadingSupport : MonoBehaviour
 				point = y - point;
 			}
 				
-			if (y < 10)
+			if (y < 1)
 			{
 				point = 0f;
 			}
-			else if (y > 60)
+			else if(y + point / 2.2f > 75)
 			{
-				point = (point2 + point) / 2;
+				if (point / 2.8f < point2)
+				{
+					point = point2 + point; // more natural surface
+				}
+				else
+				{
+					point = point2 - point;
+				}
+			}
+			else
+			{
+				point = point2 - point;
 			}
 
 			// Set the value of this point in the terrainMap.
