@@ -6,8 +6,6 @@ using UnityEngine;
 public class ChunkGenerator : MonoBehaviour
 {
     public static ChunkGenerator Instance;
-    public SensorToolkit.RaySensor sensorPoint;
-    public SensorToolkit.RaySensor sensorTerrain;
     public Transform placementPoint;
 
     public List<Vector3Int> updatingChunks = new List<Vector3Int>();
@@ -163,36 +161,41 @@ public class ChunkGenerator : MonoBehaviour
 
     private void EditTerrainHold()
     {
-        if (updatingChunks.Count <= 0)
-        {
-            if (Input.GetKey(KeyCode.Mouse0) || Input.GetKey(KeyCode.Mouse1))
-            {
-                if (sensorPoint.DetectedObjects.Count > 0)
-                {
-                    if (sensorPoint.DetectedObjectRayHits[0].point.y > 15)
-                    {
-                        var val = Input.GetKey(KeyCode.Mouse0) ? 0f : 1f;
-                        foreach (var j in GetNeighbourChunksFromPos(sensorPoint.DetectedObjectRayHits[0].transform.position))
-                        {
-                            updatingChunks.Add(j.ChunkPos);
-                            var points = GetCirclePoints(sensorPoint.DetectedObjectRayHits[0].point, chunkSettings.editingRadious);
-                            j.EditTerrain(points, val);
-                            foreach (var dir in from i in points where Vector3.Distance(i, viewer.position) < 1.5f && val == 0f select new Vector3(i.x, i.y -2, i.z) - new Vector3(viewer.position.x, viewer.position.y + 2, viewer.position.z) into dir select -dir.normalized)
-                            {
-                                // And finally we add force in the direction of dir and multiply it by force. 
-                                // This will push back the player
-                                viewerRb.AddForce(dir * 700);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (sensorPoint.DetectedObjects.Count > 0)
-        {
-            placementPoint.position = sensorPoint.DetectedObjectRayHits[0].point;
-        }
+        if (updatingChunks.Count > 0) return;
+        RaycastHit hit;
+        if (!Physics.Raycast(viewer.position, viewer.transform.TransformDirection(Vector3.forward), out hit, 10)) return;
+        //Debug.Log(hit.transform);
+        //placementPoint.position = hit.point;
+        
+        if (!Input.GetKey(KeyCode.Mouse0) && !Input.GetKey(KeyCode.Mouse1)) return;
+        
+        if (!(hit.point.y > -chunkSettings.chunkBelowZero + 1)) return;
+        
+        
+        
+        var val = Input.GetKey(KeyCode.Mouse0) ? 0f : 1f;
+        var x = Mathf.CeilToInt(hit.transform.position.x);
+        var y = Mathf.CeilToInt(hit.transform.position.y);
+        var z = Mathf.CeilToInt(hit.transform.position.z);
+        var tempVector3 = new Vector3Int(x, y, z);
+        
+        updatingChunks.Add(_chunks[tempVector3].ChunkPos);
+        
+        var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
+        _chunks[tempVector3].EditTerrain(points, val);
+        // foreach (var j in GetNeighbourChunksFromPos(hit.transform.position))
+        // {
+        //     updatingChunks.Add(j.ChunkPos);
+        //     var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
+        //     j.EditTerrain(points, val);
+        //     // foreach (var dir in from i in points where Vector3.Distance(i, viewer.position) < 1.5f && val == 0f select new Vector3(i.x, i.y -2, i.z) - new Vector3(viewer.position.x, viewer.position.y + 2, viewer.position.z) into dir select -dir.normalized)
+        //     // {
+        //     //     // And finally we add force in the direction of dir and multiply it by force. 
+        //     //     // This will push back the player
+        //     //     viewerRb.AddForce(dir * 700);
+        //     //     break;
+        //     // }
+        // }
     }
 
     public Chunk GetChunkFromPos(Vector3 pos)

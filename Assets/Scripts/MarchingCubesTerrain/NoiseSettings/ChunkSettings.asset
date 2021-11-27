@@ -15,7 +15,8 @@ MonoBehaviour:
   occlusion: 0
   limitThreads: 0
   seed: 255
-  viewDistance: 300
+  viewDistance: 13
+  RealViewDistance: 130
   maxNumberOfThreadsPerFrame: 3
   chunkScale: 1
   NoiseLayers:
@@ -29,7 +30,7 @@ MonoBehaviour:
       persistence: 2
       minValue: 0.62
   - enabled: 1
-    useFirstLayerAsMask: 1
+    useFirstLayerAsMask: 0
     noiseSettings:
       strength: 0.4
       numLayers: 2
@@ -39,11 +40,17 @@ MonoBehaviour:
       minValue: 0.3
   chunkHeight: 200
   chunkwidth: 10
-  worldHeight: 200
+  chunkBelowZero: 30
+  worldHeight: 235
   amp: 3
   freq: 0.1317
   terrainSurface: 0.5
+  caveThreshold: 25
+  caveAmpMult: 1.6
+  caveFreqMult: 2
+  caveHeightLimited: 0
+  caveMaxHeight: 75
   smoothTerrain: 0
   flatShading: 1
-  allowEditing: 0
+  allowEditing: 1
   editingRadious: 2

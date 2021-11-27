@@ -133,7 +133,22 @@ public class Chunk
 		{
 			Chunkwidth = _chunkSettings.chunkwidth,
 			ChunkHeight = _chunkSettings.chunkHeight,
-			TerrainSurface = _chunkSettings.terrainSurface
+			ChunkPos = _position,
+			ChunkScale = _scale,
+			WorldHeight = _chunkSettings.worldHeight,
+			NoiseFilters = _noiseFilters,
+			NoiseLayers = _chunkSettings.NoiseLayers,
+			Freq = _chunkSettings.freq,
+			Amp = _chunkSettings.amp,
+			TerrainSurface = _chunkSettings.terrainSurface,
+			smooth = _chunkSettings.smoothTerrain,
+			flatShading = _chunkSettings.flatShading,
+			caveThreshold = _chunkSettings.caveThreshold,
+			caveAmp = _chunkSettings.caveAmpMult,
+			caveFreq = _chunkSettings.caveFreqMult,
+			caveHeightLimited = _chunkSettings.caveHeightLimited,
+			caveMaxHeight = _chunkSettings.caveMaxHeight,
+			chunkBelowZero = _chunkSettings.chunkBelowZero
 		};
 		
 		_meshData.Triangles.Clear();

@@ -153,12 +153,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71e1fe992abdf1f4d9c4182a6d616fad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensorPoint: {fileID: 1180432617}
-  sensorTerrain: {fileID: 1569917505}
   placementPoint: {fileID: 1790719023}
   updatingChunks: []
   cam: {fileID: 2013193034}
-  viewer: {fileID: 680350073}
+  viewer: {fileID: 2013193032}
   viewerPosition: {x: 0, y: 0}
   playerCamera: {fileID: 2013193032}
   viewerRb: {fileID: 0}
@@ -194,12 +192,6 @@ MonoBehaviour:
   chunkSettings: {fileID: 11400000, guid: 10a3111ea62298745ab0bf659904f8cb, type: 2}
   chunkGenerator: {fileID: 199097509}
   currentThreads: 0
---- !u!4 &680350073 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4122625377137146, guid: 5d075d3ed32dfe1498e31454964d07e8,
-    type: 3}
-  m_PrefabInstance: {fileID: 2013193031}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +424,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!135 &1790719020
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -592,7 +584,7 @@ PrefabInstance:
     - target: {fileID: 114193288615624450, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114453171939595980, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
@@ -607,12 +599,12 @@ PrefabInstance:
     - target: {fileID: 114824084839813896, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114843919167305020, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 136958806423733192, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}

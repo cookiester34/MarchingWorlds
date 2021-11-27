@@ -3,11 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="c6191bce-27de-4b23-86ea-68fbbc1ea5e8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MarchingWorlds/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MarchingWorlds/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/Chunk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/Chunk.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/ChunkGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/ChunkGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/MultiThreadingSupport.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/MultiThreadingSupport.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/NoiseSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/NoiseSettings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UserSettings/Layouts/default-2021.dwlt" beforeDir="false" afterPath="$PROJECT_DIR$/UserSettings/Layouts/default-2021.dwlt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
