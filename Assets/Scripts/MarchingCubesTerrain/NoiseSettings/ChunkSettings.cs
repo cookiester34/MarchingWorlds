@@ -8,20 +8,24 @@ public class ChunkSettings : ScriptableObject
 	public bool occlusion = false;
 	public bool limitThreads = false;
 	public int seed = 225;
-	[Range(10, 300)]
-	public int viewDistance = 10;
-	[Range(1, 12)]
-	public int maxNumberOfThreadsPerFrame = 5;
+	[Range(3, 64)]
+	public int viewDistance = 7;
+
+	[HideInInspector] public float RealViewDistance;
+	[Range(1, 6)]
+	public int maxNumberOfThreadsPerFrame = 2;
 	[HideInInspector]
     public int chunkScale = 1;
     
     [SerializeField]
     public List<NoiseLayer> NoiseLayers;
 
-	[HideInInspector]
-	public int chunkHeight = 275;
-	[HideInInspector]
-	public int chunkwidth = 10;
+    [Range(150, 420)]
+	public int chunkHeight = 250;
+	[Range(5, 15)]
+	public int chunkwidth = 5;
+	[Range(0, 150)]
+	public int chunkBelowZero = 30;
 
 	[HideInInspector]
 	public float worldHeight = 275;
@@ -31,6 +35,18 @@ public class ChunkSettings : ScriptableObject
 	public float freq = 0.13f;
 
 	public float terrainSurface = 0.5f;
+
+	[Range(0,100)]
+	public float caveThreshold = 25f;
+	[Range(0.1f,8f)]
+	public float caveAmpMult = 1.6f;
+	[Range(0.1f,8f)]
+	public float caveFreqMult = 0.13f;
+
+	public bool caveHeightLimited = false;
+
+	[Range(0, 420)]
+	public float caveMaxHeight = 75f;
 
 	public bool smoothTerrain = false;
 	

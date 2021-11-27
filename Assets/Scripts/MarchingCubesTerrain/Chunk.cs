@@ -95,7 +95,13 @@ public class Chunk
 			Amp = _chunkSettings.amp,
 			TerrainSurface = _chunkSettings.terrainSurface,
 			smooth = _chunkSettings.smoothTerrain,
-			flatShading = _chunkSettings.flatShading
+			flatShading = _chunkSettings.flatShading,
+			caveThreshold = _chunkSettings.caveThreshold,
+			caveAmp = _chunkSettings.caveAmpMult,
+			caveFreq = _chunkSettings.caveFreqMult,
+			caveHeightLimited = _chunkSettings.caveHeightLimited,
+			caveMaxHeight = _chunkSettings.caveMaxHeight,
+			chunkBelowZero = _chunkSettings.chunkBelowZero
 		};
 		
 		switch (queue)
@@ -157,6 +163,9 @@ public class Chunk
 	{
 		if (!_meshUpdate)
 		{
+			var width = _chunkSettings.chunkwidth + 1;
+			var height = _chunkSettings.chunkHeight + 1 + _chunkSettings.chunkBelowZero;
+			
 			_meshUpdate = true;
 			var cancel = true;
 			foreach (var v3Int in pos.Select(i => val > 0f ? new Vector3Int(Mathf.FloorToInt(i.x) - _position.x, Mathf.FloorToInt(i.y) - _position.y, Mathf.FloorToInt(i.z) - _position.z) : new Vector3Int(Mathf.CeilToInt(i.x) - _position.x, Mathf.CeilToInt(i.y) - _position.y, Mathf.CeilToInt(i.z) - _position.z)))
@@ -164,7 +173,7 @@ public class Chunk
 				try
 				{
 					cancel = false;
-					_meshData.TerrainMap[v3Int.x * 276 * 11 + v3Int.y * 11 + v3Int.z] = val;
+					_meshData.TerrainMap[v3Int.x * height * width + v3Int.y * width + v3Int.z] = val;
 				}
 				catch
 				{

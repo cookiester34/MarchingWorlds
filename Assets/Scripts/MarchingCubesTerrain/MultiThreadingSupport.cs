@@ -83,6 +83,12 @@ public class MultiThreadingSupport : MonoBehaviour
 		public float TerrainSurface;
 		public bool smooth;
 		public bool flatShading;
+		public float caveThreshold;
+		public float caveAmp;
+		public float caveFreq;
+		public bool caveHeightLimited;
+		public float caveMaxHeight;
+		public int chunkBelowZero;
 		
 		public struct NoiseLayerStruct
 		{
@@ -160,14 +166,16 @@ public class MultiThreadingSupport : MonoBehaviour
 	{
 		public readonly List<Vector3> Vertices = new();
 		public readonly List<int> Triangles = new();
-		public float[] TerrainMap = new float[36443];
+		public float[] TerrainMap;
 	}
 
     private MeshData BuildChunk(ChunkDataRequested chunkDataReq)
-	{
-		var meshData = new MeshData();
+    {
+	    var width = chunkDataReq.Chunkwidth + 1;
+	    var height = chunkDataReq.ChunkHeight + 1  + chunkDataReq.chunkBelowZero;
+	    var meshData = new MeshData();
 
-		var terrainMap = new float[36443];
+		var terrainMap = new float[width * height * width + height * width + width];
 
 		terrainMap = PopulateTerrainMap(chunkDataReq, terrainMap);
 		meshData.TerrainMap = terrainMap;
@@ -209,50 +217,56 @@ public class MultiThreadingSupport : MonoBehaviour
 
 	private static float[] PopulateTerrainMap(ChunkDataRequested chunkDataReq, float[] terrainMap)
 	{
+		var width = chunkDataReq.Chunkwidth + 1;
+		var height = chunkDataReq.ChunkHeight + 1;
+
+		
+		
 		// The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger
 		// than the width/height of our mesh.
-		for (var x = 0; x < chunkDataReq.Chunkwidth + 1; x++)
-		for (var y = 0; y < chunkDataReq.ChunkHeight + 1; y++)
-		for (var z = 0; z < chunkDataReq.Chunkwidth + 1; z++)
+		for (var x = 0; x < width; x++)
+		for (var y = -chunkDataReq.chunkBelowZero; y < height; y++)
+		for (var z = 0; z < width; z++)
 		{
 			var noisePos = new Vector3((float) x + chunkDataReq.ChunkPos.x / chunkDataReq.ChunkScale,
 				(float) y + chunkDataReq.ChunkPos.y / chunkDataReq.ChunkScale,
 				(float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale);
 			var point = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers, chunkDataReq.Freq, chunkDataReq.Amp, chunkDataReq.WorldHeight);
-			var point2 = chunkDataReq.ChunkHeight * Mathf.PerlinNoise(((float) x + chunkDataReq.ChunkPos.x / chunkDataReq.ChunkScale) / 96f * chunkDataReq.Freq + 81f,((float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale) / 64f * chunkDataReq.Freq - 81f);
+			
+
 			if (y > chunkDataReq.WorldHeight)
 			{
-				point2 = 1f;
 				point = 1f;
 			}
-			else
-			{
-				point2 = y - point2;
-				point = y - point;
-			}
-				
-			if (y < 1)
+			else if (y < -chunkDataReq.chunkBelowZero + 1)
 			{
 				point = 0f;
 			}
-			else if(y + point / 2.2f > 75)
-			{
-				if (point / 2.8f < point2)
-				{
-					point = point2 + point; // more natural surface
-				}
-				else
-				{
-					point = point2 - point;
-				}
-			}
 			else
 			{
-				point = point2 - point;
+				var point2 = chunkDataReq.ChunkHeight * Mathf.PerlinNoise(
+					((float) x + chunkDataReq.ChunkPos.x / chunkDataReq.ChunkScale) / 96f * chunkDataReq.Freq + 81f,
+					((float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale) / 64f * chunkDataReq.Freq - 81f);
+				point2 = y - point2;
+				point = y - point;
+				
+				point = point2 + point; // surface level
+
+				var pointCave = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers,
+					chunkDataReq.Freq * chunkDataReq.caveFreq, chunkDataReq.Amp * chunkDataReq.caveAmp, chunkDataReq.WorldHeight);
+				if(!chunkDataReq.caveHeightLimited)
+					point = pointCave < chunkDataReq.caveThreshold ? 1 : point;
+				else
+				{
+					if(y < chunkDataReq.caveMaxHeight)
+						point = pointCave < chunkDataReq.caveThreshold ? 1 : point;
+				}
+
 			}
 
+			var tempHeight = height + chunkDataReq.chunkBelowZero;
 			// Set the value of this point in the terrainMap.
-			terrainMap[x * 276 * 11 + y * 11 + z] = point;
+			terrainMap[x * tempHeight * width + (y + chunkDataReq.chunkBelowZero) * width + z] = point;
 		}
 
 		return terrainMap;
@@ -263,7 +277,7 @@ public class MultiThreadingSupport : MonoBehaviour
 	{
 		// Loop through each "cube" in our terrain.
 		for (float x = 0; x < chunkDataReq.Chunkwidth; x++)
-		for (float y = 0; y < chunkDataReq.ChunkHeight; y++)
+		for (float y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight; y++)
 		for (float z = 0; z < chunkDataReq.Chunkwidth; z++)
 		{
 			// Create an array of floats representing each corner of a cube and get the value from our terrainMap.
@@ -271,7 +285,7 @@ public class MultiThreadingSupport : MonoBehaviour
 			for (var i = 0; i < 8; i++)
 			{
 				var temp = new Vector3Int((int) x, (int) y, (int) z);
-				cube[i] = SampleTerrain(temp + ChunkData.CornerTable[i], meshData.TerrainMap);
+				cube[i] = SampleTerrain(temp + ChunkData.CornerTable[i], meshData.TerrainMap, chunkDataReq);
 			}
 
 			// Get the configuration index of this cube.
@@ -340,9 +354,11 @@ public class MultiThreadingSupport : MonoBehaviour
 		return meshData;
 	}
 
-	private static float SampleTerrain(Vector3Int point, IReadOnlyList<float> terrainMap)
+	private static float SampleTerrain(Vector3Int point, IReadOnlyList<float> terrainMap, ChunkDataRequested chunkDataReq)
 	{
-		return terrainMap[point.x * 276 * 11 + point.y * 11 + point.z];
+		var width = chunkDataReq.Chunkwidth + 1;
+		var height = chunkDataReq.ChunkHeight + 1 + chunkDataReq.chunkBelowZero;
+		return terrainMap[point.x * height * width + (point.y + chunkDataReq.chunkBelowZero) * width + point.z];
 	}
 
 	private int VertForIndice(Vector3 vert, IList<Vector3> vertices)

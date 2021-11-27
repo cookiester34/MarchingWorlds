@@ -14,6 +14,23 @@ public class ChunkGenerator : MonoBehaviour
     public readonly List<ChunkUpdateQueue> QueuedChunkUpdates = new List<ChunkUpdateQueue>();
 
     public Camera cam;
+    
+    private readonly Dictionary<Vector3Int, Chunk> _chunks = new Dictionary<Vector3Int, Chunk>();
+    public readonly Dictionary<Vector3Int, MultiThreadingSupport.MeshData> CreatedMeshes = new Dictionary<Vector3Int, MultiThreadingSupport.MeshData>();
+
+    public Transform viewer;
+    [HideInInspector]
+    public Vector2 viewerPosition;
+
+    public Transform playerCamera;
+
+    public Rigidbody viewerRb;
+
+    public Material material;
+
+    public ChunkSettings chunkSettings;
+
+    private float OldviewDistance;
 
     public class ChunkUpdateQueue
     {
@@ -36,30 +53,24 @@ public class ChunkGenerator : MonoBehaviour
 
         if (chunkSettings.chunkScale != 1)
             chunkSettings.allowEditing = false;
+
+        chunkSettings.worldHeight = chunkSettings.chunkHeight + 35;
+
+        chunkSettings.RealViewDistance = chunkSettings.viewDistance * chunkSettings.chunkwidth;
+        OldviewDistance = chunkSettings.viewDistance;
     }
-
-    //pool chunks
-
-    private readonly Dictionary<Vector3Int, Chunk> _chunks = new Dictionary<Vector3Int, Chunk>();
-    public readonly Dictionary<Vector3Int, MultiThreadingSupport.MeshData> CreatedMeshes = new Dictionary<Vector3Int, MultiThreadingSupport.MeshData>();
-
-    public Transform viewer;
-	[HideInInspector]
-	public Vector2 viewerPosition;
-
-    public Transform playerCamera;
-
-    public Rigidbody viewerRb;
-
-    public Material material;
-
-    public ChunkSettings chunkSettings;
 
     private void LateUpdate()
     {
         var position = viewer.position;
         viewerPosition = new Vector2(position.x, position.z);
         UpdateVisibleChunks();
+
+        if (chunkSettings.viewDistance != OldviewDistance)
+        {
+            chunkSettings.RealViewDistance = chunkSettings.viewDistance * chunkSettings.chunkwidth;
+            OldviewDistance = chunkSettings.viewDistance;
+        }
 
         if (Input.GetKeyDown(KeyCode.Escape))
             Cursor.lockState = CursorLockMode.None;
@@ -94,9 +105,9 @@ public class ChunkGenerator : MonoBehaviour
         var playerPosition = new Vector3(posX, 0, posZ);
         var width = chunkSettings.chunkwidth * chunkSettings.chunkScale;
 
-        for (var i = posX - (chunkSettings.viewDistance * 2 * chunkSettings.chunkScale); i < posX + (chunkSettings.viewDistance * 2 * chunkSettings.chunkScale); i+= width)
+        for (var i = posX - (chunkSettings.RealViewDistance * 2 * chunkSettings.chunkScale); i < posX + (chunkSettings.RealViewDistance * 2 * chunkSettings.chunkScale); i+= width)
         {
-            for (var j = posZ - (chunkSettings.viewDistance * 2 * chunkSettings.chunkScale); j < posZ + (chunkSettings.viewDistance * 2 * chunkSettings.chunkScale); j += width)
+            for (var j = posZ - (chunkSettings.RealViewDistance * 2 * chunkSettings.chunkScale); j < posZ + (chunkSettings.RealViewDistance * 2 * chunkSettings.chunkScale); j += width)
             {
                 var chunkX = RoundToNearest(i, width);
                 var chunkZ = RoundToNearest(j, width);
@@ -104,7 +115,7 @@ public class ChunkGenerator : MonoBehaviour
                 
                 
                 var distance = Vector3.Distance(playerPosition, pos);
-                if (distance < chunkSettings.viewDistance && OnScreen(pos) || distance < chunkSettings.chunkwidth * 4)
+                if (distance < chunkSettings.RealViewDistance && OnScreen(pos) || distance < chunkSettings.chunkwidth * 4)
                 {
                     if (_chunks.ContainsKey(pos)) continue;
                     Chunk tempChunk;
