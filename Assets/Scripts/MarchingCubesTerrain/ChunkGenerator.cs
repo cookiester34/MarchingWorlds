@@ -162,40 +162,26 @@ public class ChunkGenerator : MonoBehaviour
     private void EditTerrainHold()
     {
         if (updatingChunks.Count > 0) return;
-        RaycastHit hit;
-        if (!Physics.Raycast(viewer.position, viewer.transform.TransformDirection(Vector3.forward), out hit, 10)) return;
-        //Debug.Log(hit.transform);
-        //placementPoint.position = hit.point;
         
         if (!Input.GetKey(KeyCode.Mouse0) && !Input.GetKey(KeyCode.Mouse1)) return;
         
+        RaycastHit hit;
+        if (!Physics.Raycast(viewer.position, viewer.transform.TransformDirection(Vector3.forward), out hit, 10)) return;
+        
         if (!(hit.point.y > -chunkSettings.chunkBelowZero + 1)) return;
         
-        
-        
         var val = Input.GetKey(KeyCode.Mouse0) ? 0f : 1f;
-        var x = Mathf.CeilToInt(hit.transform.position.x);
-        var y = Mathf.CeilToInt(hit.transform.position.y);
-        var z = Mathf.CeilToInt(hit.transform.position.z);
-        var tempVector3 = new Vector3Int(x, y, z);
-        
-        updatingChunks.Add(_chunks[tempVector3].ChunkPos);
-        
-        var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
-        _chunks[tempVector3].EditTerrain(points, val);
-        // foreach (var j in GetNeighbourChunksFromPos(hit.transform.position))
-        // {
-        //     updatingChunks.Add(j.ChunkPos);
-        //     var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
-        //     j.EditTerrain(points, val);
-        //     // foreach (var dir in from i in points where Vector3.Distance(i, viewer.position) < 1.5f && val == 0f select new Vector3(i.x, i.y -2, i.z) - new Vector3(viewer.position.x, viewer.position.y + 2, viewer.position.z) into dir select -dir.normalized)
-        //     // {
-        //     //     // And finally we add force in the direction of dir and multiply it by force. 
-        //     //     // This will push back the player
-        //     //     viewerRb.AddForce(dir * 700);
-        //     //     break;
-        //     // }
-        // }
+
+        var js = GetNeighbourChunksFromPos(hit.transform.position);
+        foreach (var j in js)
+        {
+            updatingChunks.Add(j.ChunkPos);
+            var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
+            j.EditTerrain(points, val);
+        }
+
+        // var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
+        // GetChunkFromPos(hit.transform.position).EditTerrain(points, val);
     }
 
     public Chunk GetChunkFromPos(Vector3 pos)
@@ -219,7 +205,8 @@ public class ChunkGenerator : MonoBehaviour
         {
             for (var j = -1; j < 2; j++)
             {
-                var tempChunkPos = new Vector3Int(tempVector3.x - (chunkSettings.chunkwidth * j), 0, tempVector3.z - (chunkSettings.chunkwidth * i));
+                var tempChunkPos = new Vector3Int(tempVector3.x - chunkSettings.chunkwidth * j, 0,
+                    tempVector3.z - chunkSettings.chunkwidth * i);
                 chunkList.Add(_chunks[tempChunkPos]);
             }
         }
@@ -227,8 +214,9 @@ public class ChunkGenerator : MonoBehaviour
         return chunkList;
     }
 
-    private static List<Vector3> GetCirclePoints(Vector3 pos, float radius = 0.87f)
+    private List<Vector3> GetCirclePoints(Vector3 pos, float radius = 0.87f)
     {
+        Vector3Int posInt = new Vector3Int((int) pos.x, (int) pos.y, (int) pos.z);
         var gridPoints = new List<Vector3>();
         var radiusCeil = Mathf.CeilToInt(radius);
         for (var i = -radiusCeil; i <= radiusCeil; i++)
@@ -237,12 +225,10 @@ public class ChunkGenerator : MonoBehaviour
             {
                 for (var k = -radiusCeil; k <= radiusCeil; k++)
                 {
-                    var gridPoint = new Vector3(Mathf.FloorToInt(pos.x + i),
-                                                    Mathf.FloorToInt(pos.y + j),
-                                                    Mathf.FloorToInt(pos.z + k));
-                    if (Vector3.Distance(pos, gridPoint) <= radius)
+                    var gridPoint = new Vector3(posInt.x + i,posInt.y + j,posInt.z + k);
+                    if (Vector3.Distance(posInt, gridPoint) <= radius)
                     {
-                        gridPoints.Add(gridPoint);
+                        gridPoints.Add(gridPoint + new Vector3(0, chunkSettings.chunkBelowZero));
                     }
                 }
             }

@@ -286,126 +286,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &1180432616 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1457344649512708, guid: 5d075d3ed32dfe1498e31454964d07e8,
-    type: 3}
-  m_PrefabInstance: {fileID: 2013193031}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1180432617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1180432616}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4eef69e252fee6848bdd23e5429abac6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  IgnoreList: []
-  EnableTagFilter: 0
-  AllowedTags: []
-  OnDetected:
-    m_PersistentCalls:
-      m_Calls: []
-  OnLostDetection:
-    m_PersistentCalls:
-      m_Calls: []
-  Length: 8
-  Radius: 0.1
-  ObstructedByLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  DetectsOnLayers:
-    serializedVersion: 2
-    m_Bits: 8
-  DetectionMode: 0
-  Direction: {x: 0, y: 0, z: 1}
-  WorldSpace: 0
-  SensorUpdateMode: 0
-  InitialBufferSize: 20
-  DynamicallyIncreaseBufferSize: 1
-  OnObstruction:
-    m_PersistentCalls:
-      m_Calls: []
-  OnClear:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!1 &1569917503
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1569917504}
-  - component: {fileID: 1569917505}
-  m_Layer: 0
-  m_Name: TerrainSensor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1569917504
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1569917503}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2013193032}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1569917505
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1569917503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4eef69e252fee6848bdd23e5429abac6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  IgnoreList: []
-  EnableTagFilter: 0
-  AllowedTags: []
-  OnDetected:
-    m_PersistentCalls:
-      m_Calls: []
-  OnLostDetection:
-    m_PersistentCalls:
-      m_Calls: []
-  Length: 12
-  Radius: 1.6
-  ObstructedByLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  DetectsOnLayers:
-    serializedVersion: 2
-    m_Bits: 8
-  DetectionMode: 0
-  Direction: {x: 0, y: 0, z: 1}
-  WorldSpace: 0
-  SensorUpdateMode: 0
-  InitialBufferSize: 20
-  DynamicallyIncreaseBufferSize: 1
-  OnObstruction:
-    m_PersistentCalls:
-      m_Calls: []
-  OnClear:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &1790719019
 GameObject:
   m_ObjectHideFlags: 0
@@ -579,7 +459,7 @@ PrefabInstance:
     - target: {fileID: 114036295079588584, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114193288615624450, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
@@ -594,7 +474,7 @@ PrefabInstance:
     - target: {fileID: 114620730111555832, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114824084839813896, guid: 5d075d3ed32dfe1498e31454964d07e8,
         type: 3}

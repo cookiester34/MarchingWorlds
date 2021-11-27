@@ -119,7 +119,7 @@ public class Chunk
 
 	private void OnMeshDataReceived(MultiThreadingSupport.MeshData meshData)
     {
-	    _multiThreadingSupport.currentThreads--;
+	    //_multiThreadingSupport.currentThreads--;
 		_meshUpdate = false;
 		_meshData = meshData;
 		BuildMesh(_meshData.Vertices, _meshData.Triangles);
@@ -165,7 +165,9 @@ public class Chunk
 		};
 		mesh.RecalculateNormals();
 		if(_meshFilter != null)
+		{
 			_meshFilter.mesh = mesh;
+		}
 		if (_meshCollider != null)
 		 	_meshCollider.sharedMesh = mesh;
 		if (ChunkObject != null)
@@ -183,7 +185,11 @@ public class Chunk
 			
 			_meshUpdate = true;
 			var cancel = true;
-			foreach (var v3Int in pos.Select(i => val > 0f ? new Vector3Int(Mathf.FloorToInt(i.x) - _position.x, Mathf.FloorToInt(i.y) - _position.y, Mathf.FloorToInt(i.z) - _position.z) : new Vector3Int(Mathf.CeilToInt(i.x) - _position.x, Mathf.CeilToInt(i.y) - _position.y, Mathf.CeilToInt(i.z) - _position.z)))
+			foreach (var v3Int in from i in pos where !(i.z < ChunkPos.z) && !(i.z > ChunkPos.z + _chunkSettings.chunkwidth) where !(i.x < ChunkPos.x) && !(i.x > ChunkPos.x + _chunkSettings.chunkwidth) where !(i.y < ChunkPos.y + _chunkSettings.editingRadious) && !(i.y > ChunkPos.y + _chunkSettings.chunkHeight * 2) select val > 0f
+				? new Vector3Int(Mathf.FloorToInt(i.x) - _position.x, Mathf.FloorToInt(i.y) - _position.y,
+					Mathf.FloorToInt(i.z) - _position.z)
+				: new Vector3Int(Mathf.CeilToInt(i.x) - _position.x, Mathf.CeilToInt(i.y) - _position.y,
+					Mathf.CeilToInt(i.z) - _position.z))
 			{
 				try
 				{
@@ -195,6 +201,7 @@ public class Chunk
 					// ignored
 				}
 			}
+
 			if(!cancel)
 				RecreateMesh();
             else

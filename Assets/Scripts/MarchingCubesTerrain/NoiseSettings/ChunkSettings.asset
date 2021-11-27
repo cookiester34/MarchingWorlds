@@ -40,7 +40,7 @@ MonoBehaviour:
       minValue: 0.3
   chunkHeight: 200
   chunkwidth: 10
-  chunkBelowZero: 30
+  chunkBelowZero: 150
   worldHeight: 235
   amp: 3
   freq: 0.1317
@@ -53,4 +53,4 @@ MonoBehaviour:
   smoothTerrain: 0
   flatShading: 1
   allowEditing: 1
-  editingRadious: 2
+  editingRadious: 3
