@@ -85,9 +85,9 @@ public class ChunkGenerator : MonoBehaviour
         //frames = 0;
         EditTerrainHold();
         // }
-        if (QueuedChunkUpdates.Count <= 0) return;
-        QueuedChunkUpdates[0].Chunk.EditTerrain(QueuedChunkUpdates[0].Pos, QueuedChunkUpdates[0].Val);
-        QueuedChunkUpdates.RemoveAt(0);
+        // if (QueuedChunkUpdates.Count <= 0) return;
+        // QueuedChunkUpdates[0].Chunk.EditTerrain(QueuedChunkUpdates[0].Pos, QueuedChunkUpdates[0].Val);
+        // QueuedChunkUpdates.RemoveAt(0);
     }
 
     private int RoundToNearest(float num, int factor)
@@ -117,6 +117,9 @@ public class ChunkGenerator : MonoBehaviour
                 {
                     if (_chunks.ContainsKey(pos)) continue;
                     Chunk tempChunk;
+                    
+                    var chunkLod = chunkSettings.LOD;
+                    
                     if (CreatedMeshes.ContainsKey(pos))
                     {
                         tempChunk = new Chunk(chunkSettings, pos, material, MultiThreadingSupport.Instance,
@@ -125,7 +128,7 @@ public class ChunkGenerator : MonoBehaviour
                     else
                     {
                         tempChunk = new Chunk(chunkSettings, pos, material, MultiThreadingSupport.Instance,
-                            transform);
+                            transform, chunkLod);
                     }
 
                     _chunks.Add(pos, tempChunk);
@@ -177,7 +180,9 @@ public class ChunkGenerator : MonoBehaviour
         {
             updatingChunks.Add(j.ChunkPos);
             var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
-            j.EditTerrain(points, val);
+            
+            //if your editing the terrain it's going to be close to you
+            j.EditTerrain(points, val, 0);
         }
 
         // var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);

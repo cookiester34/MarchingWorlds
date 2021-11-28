@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -21,6 +23,7 @@ public class MultiThreadingSupport : MonoBehaviour
     }
 
 	private int maxThreads = 50;
+	[HideInInspector]
 	public int currentThreads = 0;
 	public readonly List<Chunk> QueueToThread = new();
 
@@ -32,7 +35,7 @@ public class MultiThreadingSupport : MonoBehaviour
 		{
 			if(QueueToThread.Count <= i) continue;
 			var tempChunk = ClosestChunk();
-			if (!tempChunk.ReRequestChunkData(false)) continue;
+			if (!tempChunk.ReRequestChunkData(tempChunk.lod, false)) continue;
 			currentThreads++;
 			QueueToThread.Remove(tempChunk);
 		}
@@ -89,13 +92,8 @@ public class MultiThreadingSupport : MonoBehaviour
 		public bool caveHeightLimited;
 		public float caveMaxHeight;
 		public int chunkBelowZero;
-		
-		public struct NoiseLayerStruct
-		{
-			public bool enabled;
-			public bool useFirstLayerAsMask;
-			public NoiseSettings NoiseSettings;
-		}
+		public bool controlLodDistance;
+		public int Lod;
 	}
 
 	public void RequestChunkData(Action<MeshData> callback, Vector3Int chunkPos, int chunkScale, NoiseFilter[] noiseFilters, ChunkDataRequested newChunkData)
@@ -234,7 +232,7 @@ public class MultiThreadingSupport : MonoBehaviour
 			var point = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers, chunkDataReq.Freq, chunkDataReq.Amp, chunkDataReq.WorldHeight);
 			
 
-			if (y > chunkDataReq.WorldHeight)
+			if (y > chunkDataReq.ChunkHeight - 1)
 			{
 				point = 1f;
 			}
@@ -275,28 +273,39 @@ public class MultiThreadingSupport : MonoBehaviour
 
 	private MeshData CreateMeshData(ChunkDataRequested chunkDataReq, MeshData meshData)
 	{
+		var simpleIncrement = chunkDataReq.Lod == 0
+				? 1
+				: chunkDataReq.Lod * 2;
 		// Loop through each "cube" in our terrain.
-		for (float x = 0; x < chunkDataReq.Chunkwidth; x++)
-		for (float y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight; y++)
-		for (float z = 0; z < chunkDataReq.Chunkwidth; z++)
+		for (float x = 0; x < chunkDataReq.Chunkwidth; x+=simpleIncrement)
+		for (float y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight; y+=simpleIncrement)
+		for (float z = 0; z < chunkDataReq.Chunkwidth; z+=simpleIncrement)
 		{
 			// Create an array of floats representing each corner of a cube and get the value from our terrainMap.
 			var cube = new float[8];
-			for (var i = 0; i < 8; i++)
-			{
-				var temp = new Vector3Int((int) x, (int) y, (int) z);
-				cube[i] = SampleTerrain(temp + ChunkData.CornerTable[i], meshData.TerrainMap, chunkDataReq);
-			}
-
-			// Get the configuration index of this cube.
 			var configurationIndex = 0;
 			for (var i = 0; i < 8; i++)
 			{
-				// If it is, use bit-magic to the set the corresponding bit to 1. So if only the 3rd point in the cube was below
-				// the surface, the bit would look like 00100000, which represents the integer value 32.
-				if (cube[i] > chunkDataReq.TerrainSurface)
+				var temp = new Vector3Int((int) x, (int) y, (int) z);
+				
+				var width = chunkDataReq.Chunkwidth + 1;
+				var height = chunkDataReq.ChunkHeight + 1 + chunkDataReq.chunkBelowZero;
+				var point = temp + ChunkData.CornerTable[i] * simpleIncrement;
+
+				if (point.x * height * width + (point.y + chunkDataReq.chunkBelowZero) * width + point.z < 0 ||
+				    ((ICollection) meshData.TerrainMap).Count <= point.x * height * width +
+				    (point.y + chunkDataReq.chunkBelowZero) * width + point.z)
+				{
+					goto continuation;
+				}
+					var sampleTerrain = SampleTerrain(point, meshData.TerrainMap, chunkDataReq);
+
+				cube[i] = sampleTerrain;
+				// Get the configuration index of this cube.
+				if (sampleTerrain > chunkDataReq.TerrainSurface)
 					configurationIndex |= 1 << i;
 			}
+			
 			var configIndex = configurationIndex;
 
 			// If the configuration of this cube is 0 or 255 (completely inside the terrain or completely outside of it) we don't need to do anything.
@@ -305,50 +314,54 @@ public class MultiThreadingSupport : MonoBehaviour
 			// Loop through the triangles. There are never more than 5 triangles to a cube and only three vertices to a triangle.
 			var edgeIndex = 0;
 			for (var i = 0; i < 5; i++)
-			for (var p = 0; p < 3; p++)
 			{
-				// Get the current indice. We increment triangleIndex through each loop.
-				var indice = ChunkData.TriangleTable[configIndex, edgeIndex];
+				for (var p = 0; p < 3; p++)
+				{
+					// Get the current indice. We increment triangleIndex through each loop.
+					var indice = ChunkData.TriangleTable[configIndex, edgeIndex];
 
-				// If the current edgeIndex is -1, there are no more indices and we can exit the function.
-				if (indice == -1)
-				{
-					i = 6;
-					break;
-				}
+					// If the current edgeIndex is -1, there are no more indices and we can exit the function.
+					if (indice == -1)
+					{
+						i = 6;
+						break;
+					}
 
-				// Get the vertices for the start and end of this edge.
-				var tempVert1 = new Vector3Int((int) x, (int) y, (int) z);
-				Vector3 vert1 = tempVert1 + ChunkData.CornerTable[ChunkData.EdgeIndexes[indice, 0]];
-				Vector3 vert2 = tempVert1 + ChunkData.CornerTable[ChunkData.EdgeIndexes[indice, 1]];
-				Vector3 vertPosition;
-				if (chunkDataReq.smooth)
-				{
-					var vert1Sample = cube[ChunkData.EdgeIndexes[indice, 0]];
-					var vert2Sample = cube[ChunkData.EdgeIndexes[indice, 1]];
-					var dif = vert2Sample - vert1Sample;
-					if (dif == 0) dif = chunkDataReq.TerrainSurface;
-					else dif = (chunkDataReq.TerrainSurface - vert1Sample) / dif;
-					vertPosition = vert1 + (vert2 - vert1) * dif;
-				}
-				else
-				{
-					vertPosition = (vert1 + vert2) / 2f;
-				}
+					// Get the vertices for the start and end of this edge.
+					var tempVert1 = new Vector3Int((int) x , (int) y, (int) z);
+					Vector3 vert1 = tempVert1 + ChunkData.CornerTable[ChunkData.EdgeIndexes[indice, 0]] * simpleIncrement;
+					Vector3 vert2 = tempVert1 + ChunkData.CornerTable[ChunkData.EdgeIndexes[indice, 1]] * simpleIncrement;
+					Vector3 vertPosition;
+					if (chunkDataReq.smooth)
+					{
+						var vert1Sample = cube[ChunkData.EdgeIndexes[indice, 0]];
+						var vert2Sample = cube[ChunkData.EdgeIndexes[indice, 1]];
+						var dif = vert2Sample - vert1Sample;
+						if (dif == 0) dif = chunkDataReq.TerrainSurface;
+						else dif = (chunkDataReq.TerrainSurface - vert1Sample) / dif;
+						vertPosition = vert1 + (vert2 - vert1) * dif;
+					}
+					else
+					{
+						vertPosition = (vert1 + vert2) / 2f;
+					}
 
-				// Add to our vertices and triangles list and incremement the edgeIndex.
-				if (chunkDataReq.flatShading)
-				{
-					meshData.Vertices.Add(vertPosition);
-					meshData.Triangles.Add(meshData.Vertices.Count - 1);
-				}
-				else
-				{
-					meshData.Triangles.Add(VertForIndice(vertPosition, meshData.Vertices));
-				}
+					// Add to our vertices and triangles list and incremement the edgeIndex.
+					if (chunkDataReq.flatShading)
+					{
+						meshData.Vertices.Add(vertPosition);
+						meshData.Triangles.Add(meshData.Vertices.Count - 1);
+					}
+					else
+					{
+						meshData.Triangles.Add(VertForIndice(vertPosition, meshData.Vertices));
+					}
 
-				edgeIndex++;
+					edgeIndex++;
+				}
 			}
+
+			continuation: ;
 		}
 
 		return meshData;

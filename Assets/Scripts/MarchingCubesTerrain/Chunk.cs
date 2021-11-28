@@ -21,13 +21,16 @@ public class Chunk
 
 	private bool _meshUpdate = false;
 
-	public Chunk(ChunkSettings chunkSettings, Vector3Int position, Material material, MultiThreadingSupport multiThreadingSupport, Transform parent)
+	public int lod = 0;
+
+	public Chunk(ChunkSettings chunkSettings, Vector3Int position, Material material, MultiThreadingSupport multiThreadingSupport, Transform parent, int Lod)
 	{
 		_multiThreadingSupport = multiThreadingSupport;
 		_position = position;
 		_chunkSettings = chunkSettings;
 		_scale = _chunkSettings.chunkScale;
 		ChunkPos = _position;
+		lod = Lod;
 
 		ChunkObject = new GameObject("Terrain Chunk: " + position)
 		{
@@ -49,7 +52,7 @@ public class Chunk
 		{
 			_noiseFilters[i] = new NoiseFilter(_chunkSettings.NoiseLayers[i].noiseSettings);
 		}
-		ReRequestChunkData();
+		ReRequestChunkData(Lod);
 	}
 
 	public Chunk(ChunkSettings chunkSettings, Vector3Int position, Material material, MultiThreadingSupport multiThreadingSupport, MultiThreadingSupport.MeshData meshData, Transform parent)
@@ -80,7 +83,7 @@ public class Chunk
 		BuildMesh(_meshData.Vertices, _meshData.Triangles);
 	}
 
-	public bool ReRequestChunkData(bool queue = true)
+	public bool ReRequestChunkData(int Lod, bool queue = true)
 	{
 		var newChunkData = new MultiThreadingSupport.ChunkDataRequested
 		{
@@ -101,7 +104,9 @@ public class Chunk
 			caveFreq = _chunkSettings.caveFreqMult,
 			caveHeightLimited = _chunkSettings.caveHeightLimited,
 			caveMaxHeight = _chunkSettings.caveMaxHeight,
-			chunkBelowZero = _chunkSettings.chunkBelowZero
+			chunkBelowZero = _chunkSettings.chunkBelowZero,
+			controlLodDistance = _chunkSettings.controlLodDistance,
+			Lod = Lod
 		};
 		
 		switch (queue)
@@ -119,7 +124,7 @@ public class Chunk
 
 	private void OnMeshDataReceived(MultiThreadingSupport.MeshData meshData)
     {
-	    //_multiThreadingSupport.currentThreads--;
+	    _multiThreadingSupport.currentThreads--;
 		_meshUpdate = false;
 		_meshData = meshData;
 		BuildMesh(_meshData.Vertices, _meshData.Triangles);
@@ -127,7 +132,7 @@ public class Chunk
 			ChunkGenerator.Instance.updatingChunks.Remove(ChunkPos);
 	}
 
-	private void RecreateMesh()
+	private void RecreateMesh(int Lod)
 	{
 		var newChunkData = new MultiThreadingSupport.ChunkDataRequested
 		{
@@ -148,7 +153,9 @@ public class Chunk
 			caveFreq = _chunkSettings.caveFreqMult,
 			caveHeightLimited = _chunkSettings.caveHeightLimited,
 			caveMaxHeight = _chunkSettings.caveMaxHeight,
-			chunkBelowZero = _chunkSettings.chunkBelowZero
+			chunkBelowZero = _chunkSettings.chunkBelowZero,
+			controlLodDistance = _chunkSettings.controlLodDistance,
+			Lod = Lod
 		};
 		
 		_meshData.Triangles.Clear();
@@ -161,7 +168,8 @@ public class Chunk
 		var mesh = new Mesh
 		{
 			vertices = vertices.ToArray(),
-			triangles = triangles.ToArray()
+			triangles = triangles.ToArray(),
+			//normals
 		};
 		mesh.RecalculateNormals();
 		if(_meshFilter != null)
@@ -176,7 +184,7 @@ public class Chunk
 			ChunkGenerator.Instance.CreatedMeshes.Add(_position, _meshData);
 	}
 
-	public void EditTerrain(List<Vector3> pos, float val)
+	public void EditTerrain(List<Vector3> pos, float val, int Lod)
 	{
 		if (!_meshUpdate)
 		{
@@ -203,7 +211,7 @@ public class Chunk
 			}
 
 			if(!cancel)
-				RecreateMesh();
+				RecreateMesh(Lod);
             else
             {
 				_meshUpdate = false;

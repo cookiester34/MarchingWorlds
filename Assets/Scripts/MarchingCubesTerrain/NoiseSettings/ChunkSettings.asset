@@ -13,44 +13,46 @@ MonoBehaviour:
   m_Name: ChunkSettings
   m_EditorClassIdentifier: 
   occlusion: 0
-  limitThreads: 0
+  limitThreads: 1
   seed: 255
-  viewDistance: 13
-  RealViewDistance: 130
+  viewDistance: 12
+  RealViewDistance: 120
   maxNumberOfThreadsPerFrame: 3
   chunkScale: 1
   NoiseLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
     noiseSettings:
-      strength: 0.37
+      strength: 1.89
       numLayers: 2
-      baseRoughness: 1.32
-      roughness: 8.24
-      persistence: 2
-      minValue: 0.62
+      baseRoughness: 1.04
+      roughness: 2.1
+      persistence: 1.083
+      minValue: 0.596
   - enabled: 1
     useFirstLayerAsMask: 0
     noiseSettings:
-      strength: 0.4
-      numLayers: 2
-      baseRoughness: 1.64
-      roughness: 5.56
-      persistence: 1.148
-      minValue: 0.3
-  chunkHeight: 200
+      strength: 1.13
+      numLayers: 3
+      baseRoughness: 0.51
+      roughness: 1.14
+      persistence: 1
+      minValue: 1
+  controlLodDistance: 0
+  LOD: 0
+  chunkHeight: 250
   chunkwidth: 10
-  chunkBelowZero: 150
-  worldHeight: 235
-  amp: 3
-  freq: 0.1317
-  terrainSurface: 0.5
+  chunkBelowZero: 40
+  worldHeight: 285
+  amp: 2.72
+  freq: 0.2785
+  terrainSurface: 0.18
   caveThreshold: 25
-  caveAmpMult: 1.6
-  caveFreqMult: 2
+  caveAmpMult: 1.09
+  caveFreqMult: 8
   caveHeightLimited: 0
   caveMaxHeight: 75
-  smoothTerrain: 0
-  flatShading: 1
+  smoothTerrain: 1
+  flatShading: 0
   allowEditing: 1
-  editingRadious: 3
+  editingRadious: 10
