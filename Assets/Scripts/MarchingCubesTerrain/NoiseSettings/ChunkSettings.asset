@@ -14,11 +14,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   occlusion: 0
   limitThreads: 1
+  threadChunkEditing: 1
   seed: 255
-  viewDistance: 12
-  RealViewDistance: 120
+  viewDistance: 20
+  RealViewDistance: 200
   maxNumberOfThreadsPerFrame: 3
   chunkScale: 1
+  heightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.19557989
+      outSlope: 0.19557989
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.99825436
+      value: 0.19523847
+      inSlope: 230.60379
+      outSlope: 230.60379
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 461.012
+      outSlope: 461.012
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   NoiseLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
@@ -38,21 +72,20 @@ MonoBehaviour:
       roughness: 1.14
       persistence: 1
       minValue: 1
-  controlLodDistance: 0
   LOD: 0
-  chunkHeight: 250
+  chunkHeight: 215
   chunkwidth: 10
-  chunkBelowZero: 40
-  worldHeight: 285
+  chunkBelowZero: 0
+  worldHeight: 250
   amp: 2.72
   freq: 0.2785
   terrainSurface: 0.18
   caveThreshold: 25
   caveAmpMult: 1.09
   caveFreqMult: 8
-  caveHeightLimited: 0
-  caveMaxHeight: 75
-  smoothTerrain: 1
-  flatShading: 0
+  caveHeightLimited: 1
+  caveMaxHeight: 0
+  smoothTerrain: 0
+  flatShading: 1
   allowEditing: 1
-  editingRadious: 10
+  editingRadious: 2

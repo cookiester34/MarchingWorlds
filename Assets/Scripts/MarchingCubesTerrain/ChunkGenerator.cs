@@ -6,7 +6,6 @@ using UnityEngine;
 public class ChunkGenerator : MonoBehaviour
 {
     public static ChunkGenerator Instance;
-    public Transform placementPoint;
 
     public List<Vector3Int> updatingChunks = new List<Vector3Int>();
     public readonly List<ChunkUpdateQueue> QueuedChunkUpdates = new List<ChunkUpdateQueue>();
@@ -30,6 +29,12 @@ public class ChunkGenerator : MonoBehaviour
 
     private float OldviewDistance;
 
+    public bool threadingChunks = false;
+    public int waitingOnChunks = 0;
+
+    private int _frames = 0;
+
+    
     public class ChunkUpdateQueue
     {
         public Chunk Chunk;
@@ -56,9 +61,23 @@ public class ChunkGenerator : MonoBehaviour
 
         chunkSettings.RealViewDistance = chunkSettings.viewDistance * chunkSettings.chunkwidth;
         OldviewDistance = chunkSettings.viewDistance;
+
+        CheckLOD();
     }
 
-    private void LateUpdate()
+    private void CheckLOD()
+    {
+        if(chunkSettings.LOD == 0) return;
+        var chunkSettingsLOD = chunkSettings.LOD * 2;
+        if (chunkSettings.chunkwidth % chunkSettingsLOD == 0) return;
+        if(chunkSettings.chunkwidth > chunkSettingsLOD && chunkSettingsLOD >= 6)
+            chunkSettings.chunkwidth--;
+        else
+            chunkSettings.chunkwidth++;
+        CheckLOD();
+    }
+
+    private void FixedUpdate()
     {
         var position = viewer.position;
         viewerPosition = new Vector2(position.x, position.z);
@@ -74,17 +93,12 @@ public class ChunkGenerator : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
         if (Input.GetKeyDown(KeyCode.L))
             Cursor.lockState = CursorLockMode.Locked;
-    }
-
-    private void Update()
-    {
+        
         if (!chunkSettings.allowEditing) return;
-        // frames++;
-        // if (frames % 2 == 0)
-        // {
-        //frames = 0;
+        _frames++;
+        if (_frames % 4 != 0) return;
+        _frames = 0;
         EditTerrainHold();
-        // }
         // if (QueuedChunkUpdates.Count <= 0) return;
         // QueuedChunkUpdates[0].Chunk.EditTerrain(QueuedChunkUpdates[0].Pos, QueuedChunkUpdates[0].Val);
         // QueuedChunkUpdates.RemoveAt(0);
@@ -164,7 +178,12 @@ public class ChunkGenerator : MonoBehaviour
 
     private void EditTerrainHold()
     {
-        if (updatingChunks.Count > 0) return;
+        if (waitingOnChunks <= 0)
+        {
+            threadingChunks = true;
+        }
+        
+        if (updatingChunks.Count > 0 || !threadingChunks) return;
         
         if (!Input.GetKey(KeyCode.Mouse0) && !Input.GetKey(KeyCode.Mouse1)) return;
         
@@ -174,19 +193,59 @@ public class ChunkGenerator : MonoBehaviour
         if (!(hit.point.y > -chunkSettings.chunkBelowZero + 1)) return;
         
         var val = Input.GetKey(KeyCode.Mouse0) ? 0f : 1f;
-
-        var js = GetNeighbourChunksFromPos(hit.transform.position);
-        foreach (var j in js)
+        
+        var newChunkData = new MultiThreadingSupport.ChunkDataRequested
         {
-            updatingChunks.Add(j.ChunkPos);
-            var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
-            
-            //if your editing the terrain it's going to be close to you
-            j.EditTerrain(points, val, 0);
-        }
+            Chunkwidth = chunkSettings.chunkwidth,
+            ChunkHeight = chunkSettings.chunkHeight,
+            ChunkScale = chunkSettings.chunkScale,
+            WorldHeight = chunkSettings.worldHeight,
+            NoiseLayers = chunkSettings.NoiseLayers,
+            Freq = chunkSettings.freq,
+            Amp = chunkSettings.amp,
+            TerrainSurface = chunkSettings.terrainSurface,
+            smooth = chunkSettings.smoothTerrain,
+            flatShading = chunkSettings.flatShading,
+            caveThreshold = chunkSettings.caveThreshold,
+            caveAmp = chunkSettings.caveAmpMult,
+            caveFreq = chunkSettings.caveFreqMult,
+            caveHeightLimited = chunkSettings.caveHeightLimited,
+            caveMaxHeight = chunkSettings.caveMaxHeight,
+            chunkBelowZero = chunkSettings.chunkBelowZero,
+            heightCurve = chunkSettings.heightCurve,
+            Lod = chunkSettings.LOD
+        };
 
-        // var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
-        // GetChunkFromPos(hit.transform.position).EditTerrain(points, val);
+        if(chunkSettings.threadChunkEditing)
+        {
+            threadingChunks = true;
+            waitingOnChunks++;
+            MultiThreadingSupport.Instance.RequestGetNeighbourChunksFromPos(EditEffectedChunks, newChunkData,
+                chunkSettings.chunkwidth, chunkSettings.editingRadious, hit.transform.position, hit.point, _chunks,
+                val);
+        }
+        else
+        {
+            var points = GetCirclePoints(hit.point, chunkSettings.editingRadious);
+            var js = GetNeighbourChunksFromPos(hit.transform.position);
+            foreach (var j in js)
+            {
+                updatingChunks.Add(j.ChunkPos);
+                j.EditTerrain(points, val, chunkSettings.LOD);
+            }
+        }
+    }
+
+    private void EditEffectedChunks(List<Chunk> _chunkList)
+    {
+        waitingOnChunks += _chunks.Count;
+        foreach (var j in _chunkList.Where(j => _chunks.ContainsValue(j)))
+        {
+            var chunk = _chunks[j.ChunkPos];
+            chunk._meshData = j._meshData;
+            chunk.OnEditReturn();
+        }
+        waitingOnChunks--;
     }
 
     public Chunk GetChunkFromPos(Vector3 pos)
@@ -206,13 +265,15 @@ public class ChunkGenerator : MonoBehaviour
         var tempVector3 = new Vector3Int(x, y, z);
 
         var chunkList = new List<Chunk>();
-        for (var i = -1; i < 2; i++)
+        var numOfChunks = (int) (chunkSettings.editingRadious * 4 / 10);
+        if (numOfChunks < 1) numOfChunks = 1;
+        for (var i = -numOfChunks; i <= numOfChunks; i++)
         {
-            for (var j = -1; j < 2; j++)
+            for (var j = -numOfChunks; j <= numOfChunks; j++)
             {
                 var tempChunkPos = new Vector3Int(tempVector3.x - chunkSettings.chunkwidth * j, 0,
                     tempVector3.z - chunkSettings.chunkwidth * i);
-                chunkList.Add(_chunks[tempChunkPos]);
+                if (_chunks.ContainsKey(tempChunkPos)) chunkList.Add(_chunks[tempChunkPos]);
             }
         }
 

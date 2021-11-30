@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using static UnityEngine.Debug;
 
 public class MultiThreadingSupport : MonoBehaviour
 {
@@ -58,7 +60,7 @@ public class MultiThreadingSupport : MonoBehaviour
 	}
 
 
-	private readonly Queue<ChunkThreadInfo<MeshData>> _chunkThreadInfoQueue = new Queue<ChunkThreadInfo<MeshData>>();
+	private readonly Queue<ChunkThreadInfo<MeshData>> _chunkThreadInfoQueue = new();
 
 	private readonly struct ChunkThreadInfo<T>
 	{
@@ -66,6 +68,20 @@ public class MultiThreadingSupport : MonoBehaviour
 		public readonly T Parameter;
 
 		public ChunkThreadInfo(Action<T> callback, T parameter)
+		{
+			Callback = callback;
+			Parameter = parameter;
+		}
+	}
+	
+	private readonly Queue<ChunkListThreadInfo<List<Chunk>>> _chunkListThreadInfo = new();
+
+	private readonly struct ChunkListThreadInfo<T>
+	{
+		public readonly Action<T> Callback;
+		public readonly T Parameter;
+
+		public ChunkListThreadInfo(Action<T> callback, T parameter)
 		{
 			Callback = callback;
 			Parameter = parameter;
@@ -92,7 +108,7 @@ public class MultiThreadingSupport : MonoBehaviour
 		public bool caveHeightLimited;
 		public float caveMaxHeight;
 		public int chunkBelowZero;
-		public bool controlLodDistance;
+		public AnimationCurve heightCurve;
 		public int Lod;
 	}
 
@@ -143,20 +159,33 @@ public class MultiThreadingSupport : MonoBehaviour
 		frame++;
 		if(frame % 2 == 0)
 			RequestThreading();
-	    
-	    lock (_chunkThreadInfoQueue)
-	    {
-		    if (_chunkThreadInfoQueue.Count <= 0) return;
-	    }
 
-	    lock (_chunkThreadInfoQueue)
-	    {
-		    for(var i = 0; i < _chunkThreadInfoQueue.Count; i++)
-		    {
-			    var threadInfo = _chunkThreadInfoQueue.Dequeue();
-			    threadInfo.Callback(threadInfo.Parameter);
-		    }
-	    }
+		if (frame % 4 != 0) return;
+		lock (_chunkListThreadInfo)
+		{
+			if (_chunkListThreadInfo.Count > 0)
+			{
+				for (var i = 0; i < _chunkListThreadInfo.Count; i++)
+				{
+					var threadInfo = _chunkListThreadInfo.Dequeue();
+					threadInfo.Callback(threadInfo.Parameter);
+				}
+			}
+		}
+		
+		lock (_chunkThreadInfoQueue)
+		{
+			if (_chunkThreadInfoQueue.Count <= 0) return;
+		}
+
+		lock (_chunkThreadInfoQueue)
+		{
+			for (var i = 0; i < _chunkThreadInfoQueue.Count; i++)
+			{
+				var threadInfo = _chunkThreadInfoQueue.Dequeue();
+				threadInfo.Callback(threadInfo.Parameter);
+			}
+		}
 	}
 
 
@@ -230,8 +259,8 @@ public class MultiThreadingSupport : MonoBehaviour
 				(float) y + chunkDataReq.ChunkPos.y / chunkDataReq.ChunkScale,
 				(float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale);
 			var point = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers, chunkDataReq.Freq, chunkDataReq.Amp, chunkDataReq.WorldHeight);
-			
 
+			
 			if (y > chunkDataReq.ChunkHeight - 1)
 			{
 				point = 1f;
@@ -245,11 +274,22 @@ public class MultiThreadingSupport : MonoBehaviour
 				var point2 = chunkDataReq.ChunkHeight * Mathf.PerlinNoise(
 					((float) x + chunkDataReq.ChunkPos.x / chunkDataReq.ChunkScale) / 96f * chunkDataReq.Freq + 81f,
 					((float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale) / 64f * chunkDataReq.Freq - 81f);
-				point2 = y - point2;
-				point = y - point;
-				
-				point = point2 + point; // surface level
 
+				var chunkWidth = noisePos.x + noisePos.z - 4;
+				var eval = Mathf.Abs(point);
+				var mult = Mathf.Clamp(Mathf.Abs(chunkDataReq.heightCurve.Evaluate(eval)),0.1f, 1);
+
+				var tempy = y * mult;
+				
+				point2 = y - point2;
+				point = y - point  + tempy;
+				
+				//Log("point: " + point + " point2: " + point2 + " mult: " + tempy);
+				
+				point = (point2 + point);
+				
+				
+				
 				var pointCave = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers,
 					chunkDataReq.Freq * chunkDataReq.caveFreq, chunkDataReq.Amp * chunkDataReq.caveAmp, chunkDataReq.WorldHeight);
 				if(!chunkDataReq.caveHeightLimited)
@@ -363,7 +403,7 @@ public class MultiThreadingSupport : MonoBehaviour
 
 			continuation: ;
 		}
-
+		
 		return meshData;
 	}
 
@@ -384,5 +424,141 @@ public class MultiThreadingSupport : MonoBehaviour
 		vertices.Add(vert);
 		return vertices.Count - 1;
     }
+	
+	// public void RequestEditTerrainMeshData(Action<MeshData> callback, MeshData meshData, ChunkDataRequested newChunkData, IEnumerable<Vector3> pos, float radious, float val)
+	// {
+	// 	void ThreadStart()
+	// 	{
+	// 		EditTerrainMeshDataThread(callback, newChunkData, meshData, pos, radious, val);
+	// 	}
+	// 	new Thread(ThreadStart).Start();
+	// }
+	//
+	// private void EditTerrainMeshDataThread(Action<MeshData> callback, ChunkDataRequested chunkDataReq, MeshData _meshData, IEnumerable<Vector3> pos, float radious, float val)
+	// {
+	// 	var meshData = EditTerrainMeshData(chunkDataReq, _meshData, pos, radious, val);
+	// 	lock (_chunkThreadInfoQueue)
+	// 	{
+	// 		_chunkThreadInfoQueue.Enqueue(new ChunkThreadInfo<MeshData>(callback, meshData));
+	// 	}
+	// }
+	//
+	// private MeshData EditTerrainMeshData(ChunkDataRequested chunkDataReq, MeshData meshData, IEnumerable<Vector3> pos, float radious, float val)
+	// {
+	// 	var width = chunkDataReq.Chunkwidth + 1;
+	// 	var height = chunkDataReq.ChunkHeight + 1 + chunkDataReq.chunkBelowZero;
+	// 	var chunkPos = chunkDataReq.ChunkPos;
+	// 	
+	// 	foreach (var v3Int in from i in pos
+	// 		where !(i.z < chunkPos.z) && !(i.z > chunkPos.z + chunkDataReq.Chunkwidth)
+	// 		where !(i.x < chunkPos.x) && !(i.x > chunkPos.x + chunkDataReq.Chunkwidth)
+	// 		where !(i.y < chunkPos.y + radious) &&
+	// 		      !(i.y > chunkPos.y + chunkDataReq.ChunkHeight * 2)
+	// 		select val > 0f
+	// 		? new Vector3Int(Mathf.FloorToInt(i.x) - chunkPos.x, Mathf.FloorToInt(i.y) - chunkPos.y,
+	// 			Mathf.FloorToInt(i.z) - chunkPos.z)
+	// 		: new Vector3Int(Mathf.CeilToInt(i.x) - chunkPos.x, Mathf.CeilToInt(i.y) - chunkPos.y,
+	// 			Mathf.CeilToInt(i.z) - chunkPos.z))
+	// 	{
+	// 		try
+	// 		{
+	// 			meshData.TerrainMap[v3Int.x * height * width + v3Int.y * width + v3Int.z] = val;
+	// 		}
+	// 		catch
+	// 		{
+	// 			// ignored
+	// 		}
+	// 	}
+	//
+	// 	return meshData;
+	// }
+	
+	
+	
+	public void RequestGetNeighbourChunksFromPos(Action<List<Chunk>> callback, ChunkDataRequested chunkDataReq, int width, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
+	{
+		void ThreadStart()
+		{
+			GetNeighbourChunksFromPosThread(callback, chunkDataReq, width, radious, pos, hitPoint, _chunks, val);
+		}
+		new Thread(ThreadStart).Start();
+	}
+
+	private void GetNeighbourChunksFromPosThread(Action<List<Chunk>> callback, ChunkDataRequested chunkDataReq, int width, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
+	{
+		var chunks = GetNeighbourChunksFromPos(chunkDataReq, width, radious, pos, hitPoint, _chunks, val);
+		lock (_chunkListThreadInfo)
+		{
+			_chunkListThreadInfo.Enqueue(new ChunkListThreadInfo<List<Chunk>>(callback, chunks));
+		}
+	}
+	
+	private List<Chunk> GetNeighbourChunksFromPos(ChunkDataRequested chunkDataReq, int width, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
+	{
+		var posInt = new Vector3Int((int) hitPoint.x, (int) hitPoint.y, (int) hitPoint.z);
+		var gridPoints = new List<Vector3>();
+		var radiusCeil = Mathf.CeilToInt(radious);
+		for (var i = -radiusCeil; i <= radiusCeil; i++)
+		{
+			for (var j = -radiusCeil; j <= radiusCeil; j++)
+			{
+				for (var k = -radiusCeil; k <= radiusCeil; k++)
+				{
+					var gridPoint = new Vector3(posInt.x + i,posInt.y + j,posInt.z + k);
+					if (Vector3.Distance(posInt, gridPoint) <= radious)
+					{
+						gridPoints.Add(gridPoint + new Vector3(0, chunkSettings.chunkBelowZero));
+					}
+				}
+			}
+		}
+		
+		var x = Mathf.CeilToInt(pos.x);
+		var y = Mathf.CeilToInt(pos.y);
+		var z = Mathf.CeilToInt(pos.z);
+		var tempVector3 = new Vector3Int(x, y, z);
+		
+		var chunkList = new List<Chunk>();
+		var numOfChunks = (int) ((radious * 4) / 10);
+		if (numOfChunks < 1) numOfChunks = 1;
+		for (var i = -numOfChunks; i <= numOfChunks; i++)
+		{
+			for (var j = -numOfChunks; j <= numOfChunks; j++)
+			{
+				var tempChunkPos = new Vector3Int(tempVector3.x - chunkDataReq.Chunkwidth * j, 0,
+					tempVector3.z - chunkDataReq.Chunkwidth * i);
+
+				if (!_chunks.ContainsKey(tempChunkPos)) continue;
+				var _chunk = _chunks[tempChunkPos];
+					
+				var _width = chunkDataReq.Chunkwidth + 1;
+				var height = chunkDataReq.ChunkHeight + 1 + chunkDataReq.chunkBelowZero;
+				var chunkPos = _chunk.ChunkPos;
+		
+				foreach (var v3Int in from p in gridPoints
+					where !(p.z < chunkPos.z) && !(p.z > chunkPos.z + chunkDataReq.Chunkwidth)
+					where !(p.x < chunkPos.x) && !(p.x > chunkPos.x + chunkDataReq.Chunkwidth)
+					where !(p.y < chunkPos.y + radious) &&
+					      !(p.y > chunkPos.y + chunkDataReq.ChunkHeight * 2)
+					select val > 0f
+						? new Vector3Int(Mathf.FloorToInt(p.x) - chunkPos.x, Mathf.FloorToInt(p.y) - chunkPos.y,
+							Mathf.FloorToInt(p.z) - chunkPos.z)
+						: new Vector3Int(Mathf.CeilToInt(p.x) - chunkPos.x, Mathf.CeilToInt(p.y) - chunkPos.y,
+							Mathf.CeilToInt(p.z) - chunkPos.z))
+				{
+					try
+					{
+						_chunk._meshData.TerrainMap[v3Int.x * height * _width + v3Int.y * _width + v3Int.z] = val;
+						chunkList.Add(_chunk);
+					}
+					catch
+					{
+						// ignored
+					}
+				}
+			}
+		}
+		return chunkList;
+	}
 	
 }
