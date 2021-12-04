@@ -16,43 +16,10 @@ MonoBehaviour:
   limitThreads: 1
   threadChunkEditing: 1
   seed: 255
-  viewDistance: 20
-  RealViewDistance: 200
-  maxNumberOfThreadsPerFrame: 3
+  viewDistance: 25
+  RealViewDistance: 300
+  maxNumberOfThreadsPerFrame: 24
   chunkScale: 1
-  heightCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0.19557989
-      outSlope: 0.19557989
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.99825436
-      value: 0.19523847
-      inSlope: 230.60379
-      outSlope: 230.60379
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 461.012
-      outSlope: 461.012
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   NoiseLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
@@ -60,32 +27,43 @@ MonoBehaviour:
       strength: 1.89
       numLayers: 2
       baseRoughness: 1.04
-      roughness: 2.1
-      persistence: 1.083
+      roughness: 1.77
+      persistence: 1.019
       minValue: 0.596
+  - enabled: 1
+    useFirstLayerAsMask: 0
+    noiseSettings:
+      strength: 1.13
+      numLayers: 1
+      baseRoughness: 0.51
+      roughness: 2.52
+      persistence: 1.033
+      minValue: 1
   - enabled: 1
     useFirstLayerAsMask: 0
     noiseSettings:
       strength: 1.13
       numLayers: 3
       baseRoughness: 0.51
-      roughness: 1.14
-      persistence: 1
-      minValue: 1
-  LOD: 0
+      roughness: 3.2
+      persistence: 1.951
+      minValue: 0.947
+  Lod: 0
+  heightMultiplier: 150
   chunkHeight: 215
   chunkwidth: 10
-  chunkBelowZero: 0
+  chunkBelowZero: 40
   worldHeight: 250
-  amp: 2.72
-  freq: 0.2785
+  amp: 6
+  freq: 0.2844
   terrainSurface: 0.18
-  caveThreshold: 25
-  caveAmpMult: 1.09
+  caveThreshold: 24
+  caveAmpMult: 3.5
   caveFreqMult: 8
-  caveHeightLimited: 1
+  caveHeightLimited: 0
   caveMaxHeight: 0
-  smoothTerrain: 0
+  smoothTerrain: 1
   flatShading: 1
   allowEditing: 1
-  editingRadious: 2
+  editingRadious: 4
+  terrainShaderData: {fileID: 11400000, guid: 90652f69793f6a44db83c819adf90912, type: 2}

@@ -2,14 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c6191bce-27de-4b23-86ea-68fbbc1ea5e8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/terrainShaderData.asset" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/terrainShaderData.asset.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/Terrain.mat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/Terrain.mat.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/TerrainShaderData.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/TerrainShaderData.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/WorldShader.shader" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/WorldShader.shader.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MarchingWorlds/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MarchingWorlds/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/AmplifyShaderEditor/Examples/Assets/Textures/Grass/Grass_A.jpg.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/AmplifyShaderEditor/Examples/Assets/Textures/Grass/Grass_A.jpg.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/AmplifyShaderEditor/Examples/Assets/Textures/Grass/terrain_grass_01_a.jpg.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/AmplifyShaderEditor/Examples/Assets/Textures/Grass/terrain_grass_01_a.jpg.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/Chunk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/Chunk.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/ChunkGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/ChunkGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/MultiThreadingSupport.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/MultiThreadingSupport.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/plain.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/plain.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/InputManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/InputManager.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UserSettings/Layouts/default-2021.dwlt" beforeDir="false" afterPath="$PROJECT_DIR$/UserSettings/Layouts/default-2021.dwlt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -22,6 +33,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/809a92a718b54e21a55192c70e75634b156600/d7/118e634f/Mathf.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/TerrainShaderData.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FPSCounter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/809a92a718b54e21a55192c70e75634b156600/07/39ea75c0/Vector3.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/809a92a718b54e21a55192c70e75634b156600/3d/9a8feb14/Mesh.cs" root0="SKIP_HIGHLIGHTING" />
@@ -87,6 +99,10 @@
       <workItem from="1638036189519" duration="16851000" />
       <workItem from="1638095582363" duration="21001000" />
       <workItem from="1638188537741" duration="36085000" />
+      <workItem from="1638275953703" duration="2867000" />
+      <workItem from="1638363807542" duration="22963000" />
+      <workItem from="1638448278389" duration="14762000" />
+      <workItem from="1638619434132" duration="28986000" />
     </task>
     <servers />
   </component>

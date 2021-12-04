@@ -157,9 +157,7 @@ MonoBehaviour:
   cam: {fileID: 2013193034}
   viewer: {fileID: 2013193032}
   viewerPosition: {x: 0, y: 0}
-  playerCamera: {fileID: 2013193032}
-  viewerRb: {fileID: 0}
-  material: {fileID: 2100000, guid: 0b21b5f859b333d4aac1e047e8032a27, type: 2}
+  material: {fileID: 2100000, guid: 3ea7e985f897fcd4dbc1dc6027f3e393, type: 2}
   chunkSettings: {fileID: 11400000, guid: 10a3111ea62298745ab0bf659904f8cb, type: 2}
   threadingChunks: 0
   waitingOnChunks: 0
@@ -501,7 +499,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -539,15 +537,15 @@ RectTransform:
   m_GameObject: {fileID: 1647441110}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.548, y: 1.548, z: 1.548}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 864387366}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 110, y: 28}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 89, y: -84}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &2013193031

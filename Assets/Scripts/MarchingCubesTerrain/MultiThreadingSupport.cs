@@ -24,7 +24,7 @@ public class MultiThreadingSupport : MonoBehaviour
         Instance = this;
     }
 
-	private int maxThreads = 50;
+	
 	[HideInInspector]
 	public int currentThreads = 0;
 	public readonly List<Chunk> QueueToThread = new();
@@ -32,12 +32,12 @@ public class MultiThreadingSupport : MonoBehaviour
 	private void RequestThreading()
 	{
 		if (QueueToThread.Count <= 0) return;
-		if(currentThreads >= maxThreads && chunkSettings.limitThreads) return;
+		if(currentThreads >= Mathf.Clamp(chunkSettings.maxNumberOfThreadsPerFrame * 10,25, 45) && chunkSettings.limitThreads) return;
 		for (var i = chunkSettings.maxNumberOfThreadsPerFrame - 1; i >= 0; i--)
 		{
 			if(QueueToThread.Count <= i) continue;
 			var tempChunk = ClosestChunk();
-			if (!tempChunk.ReRequestChunkData(tempChunk.lod, false)) continue;
+			if (!tempChunk.ReRequestChunkData(false)) continue;
 			currentThreads++;
 			QueueToThread.Remove(tempChunk);
 		}
@@ -108,11 +108,11 @@ public class MultiThreadingSupport : MonoBehaviour
 		public bool caveHeightLimited;
 		public float caveMaxHeight;
 		public int chunkBelowZero;
-		public AnimationCurve heightCurve;
 		public int Lod;
+		public float heightMultiplier;
 	}
 
-	public void RequestChunkData(Action<MeshData> callback, Vector3Int chunkPos, int chunkScale, NoiseFilter[] noiseFilters, ChunkDataRequested newChunkData)
+	public void RequestChunkData(Action<MeshData> callback, ChunkDataRequested newChunkData)
 	{
 
 		void ThreadStart()
@@ -160,30 +160,33 @@ public class MultiThreadingSupport : MonoBehaviour
 		if(frame % 2 == 0)
 			RequestThreading();
 
-		if (frame % 4 != 0) return;
-		lock (_chunkListThreadInfo)
+		//if (frame % 2 != 0) return;
+		for (var j = chunkSettings.maxNumberOfThreadsPerFrame - 1; j >= 0; j--)
 		{
-			if (_chunkListThreadInfo.Count > 0)
+			lock (_chunkListThreadInfo)
 			{
-				for (var i = 0; i < _chunkListThreadInfo.Count; i++)
+				if (_chunkListThreadInfo.Count > 0)
 				{
-					var threadInfo = _chunkListThreadInfo.Dequeue();
-					threadInfo.Callback(threadInfo.Parameter);
+					for (var i = 0; i < _chunkListThreadInfo.Count; i++)
+					{
+						var threadInfo = _chunkListThreadInfo.Dequeue();
+						threadInfo.Callback(threadInfo.Parameter);
+					}
 				}
 			}
-		}
-		
-		lock (_chunkThreadInfoQueue)
-		{
-			if (_chunkThreadInfoQueue.Count <= 0) return;
-		}
 
-		lock (_chunkThreadInfoQueue)
-		{
-			for (var i = 0; i < _chunkThreadInfoQueue.Count; i++)
+			lock (_chunkThreadInfoQueue)
 			{
-				var threadInfo = _chunkThreadInfoQueue.Dequeue();
-				threadInfo.Callback(threadInfo.Parameter);
+				if (_chunkThreadInfoQueue.Count <= 0) return;
+			}
+
+			lock (_chunkThreadInfoQueue)
+			{
+				for (var i = 0; i < _chunkThreadInfoQueue.Count; i++)
+				{
+					var threadInfo = _chunkThreadInfoQueue.Dequeue();
+					threadInfo.Callback(threadInfo.Parameter);
+				}
 			}
 		}
 	}
@@ -193,6 +196,7 @@ public class MultiThreadingSupport : MonoBehaviour
 	{
 		public readonly List<Vector3> Vertices = new();
 		public readonly List<int> Triangles = new();
+		public List<Vector3> Normals = new();
 		public float[] TerrainMap;
 	}
 
@@ -200,14 +204,10 @@ public class MultiThreadingSupport : MonoBehaviour
     {
 	    var width = chunkDataReq.Chunkwidth + 1;
 	    var height = chunkDataReq.ChunkHeight + 1  + chunkDataReq.chunkBelowZero;
-	    var meshData = new MeshData();
 
 		var terrainMap = new float[width * height * width + height * width + width];
-
-		terrainMap = PopulateTerrainMap(chunkDataReq, terrainMap);
-		meshData.TerrainMap = terrainMap;
 		
-		return CreateMeshData(chunkDataReq, meshData);
+		return CreateMeshData(chunkDataReq, PopulateTerrainMap(chunkDataReq, terrainMap));
 	}
 
 	private static float CalculateNoiseVal(Vector3 pos, IReadOnlyList<NoiseFilter> noiseFilters, IReadOnlyList<ChunkSettings.NoiseLayer> noiseLayers, float freq, float amp, float worldHeight)
@@ -242,13 +242,11 @@ public class MultiThreadingSupport : MonoBehaviour
 		return worldHeight / amp * elevation;
 	}
 
-	private static float[] PopulateTerrainMap(ChunkDataRequested chunkDataReq, float[] terrainMap)
+	private static MeshData PopulateTerrainMap(ChunkDataRequested chunkDataReq, float[] terrainMap)
 	{
 		var width = chunkDataReq.Chunkwidth + 1;
 		var height = chunkDataReq.ChunkHeight + 1;
 
-		
-		
 		// The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger
 		// than the width/height of our mesh.
 		for (var x = 0; x < width; x++)
@@ -260,6 +258,7 @@ public class MultiThreadingSupport : MonoBehaviour
 				(float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale);
 			var point = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers, chunkDataReq.Freq, chunkDataReq.Amp, chunkDataReq.WorldHeight);
 
+			//var point = 0f;
 			
 			if (y > chunkDataReq.ChunkHeight - 1)
 			{
@@ -271,22 +270,14 @@ public class MultiThreadingSupport : MonoBehaviour
 			}
 			else
 			{
-				var point2 = chunkDataReq.ChunkHeight * Mathf.PerlinNoise(
+				var point2 = chunkDataReq.heightMultiplier * Mathf.PerlinNoise(
 					((float) x + chunkDataReq.ChunkPos.x / chunkDataReq.ChunkScale) / 96f * chunkDataReq.Freq + 81f,
 					((float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale) / 64f * chunkDataReq.Freq - 81f);
 
-				var chunkWidth = noisePos.x + noisePos.z - 4;
-				var eval = Mathf.Abs(point);
-				var mult = Mathf.Clamp(Mathf.Abs(chunkDataReq.heightCurve.Evaluate(eval)),0.1f, 1);
-
-				var tempy = y * mult;
-				
 				point2 = y - point2;
-				point = y - point  + tempy;
-				
-				//Log("point: " + point + " point2: " + point2 + " mult: " + tempy);
-				
-				point = (point2 + point);
+				point = y - point;
+
+				point = (point2 + point) / 2;
 				
 				
 				
@@ -305,40 +296,38 @@ public class MultiThreadingSupport : MonoBehaviour
 			var tempHeight = height + chunkDataReq.chunkBelowZero;
 			// Set the value of this point in the terrainMap.
 			terrainMap[x * tempHeight * width + (y + chunkDataReq.chunkBelowZero) * width + z] = point;
+			
 		}
 
-		return terrainMap;
+		var tempMeshData = new MeshData
+		{
+			TerrainMap = terrainMap
+		};
+		return tempMeshData;
 	}
-
 
 	private MeshData CreateMeshData(ChunkDataRequested chunkDataReq, MeshData meshData)
 	{
+		var colourMap = new List<Color>();
 		var simpleIncrement = chunkDataReq.Lod == 0
 				? 1
 				: chunkDataReq.Lod * 2;
+
 		// Loop through each "cube" in our terrain.
-		for (float x = 0; x < chunkDataReq.Chunkwidth; x+=simpleIncrement)
-		for (float y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight; y+=simpleIncrement)
-		for (float z = 0; z < chunkDataReq.Chunkwidth; z+=simpleIncrement)
+		for (var x = 0; x < chunkDataReq.Chunkwidth - simpleIncrement + 1; x+=simpleIncrement)
+		for (var y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight  - simpleIncrement + 1; y+=simpleIncrement)
+		for (var z = 0; z < chunkDataReq.Chunkwidth  - simpleIncrement + 1; z+=simpleIncrement)
 		{
 			// Create an array of floats representing each corner of a cube and get the value from our terrainMap.
 			var cube = new float[8];
 			var configurationIndex = 0;
 			for (var i = 0; i < 8; i++)
 			{
-				var temp = new Vector3Int((int) x, (int) y, (int) z);
+				var temp = new Vector3Int(x, y, z);
 				
-				var width = chunkDataReq.Chunkwidth + 1;
-				var height = chunkDataReq.ChunkHeight + 1 + chunkDataReq.chunkBelowZero;
 				var point = temp + ChunkData.CornerTable[i] * simpleIncrement;
 
-				if (point.x * height * width + (point.y + chunkDataReq.chunkBelowZero) * width + point.z < 0 ||
-				    ((ICollection) meshData.TerrainMap).Count <= point.x * height * width +
-				    (point.y + chunkDataReq.chunkBelowZero) * width + point.z)
-				{
-					goto continuation;
-				}
-					var sampleTerrain = SampleTerrain(point, meshData.TerrainMap, chunkDataReq);
+				var sampleTerrain = SampleTerrain(point, meshData.TerrainMap, chunkDataReq);
 
 				cube[i] = sampleTerrain;
 				// Get the configuration index of this cube.
@@ -368,7 +357,7 @@ public class MultiThreadingSupport : MonoBehaviour
 					}
 
 					// Get the vertices for the start and end of this edge.
-					var tempVert1 = new Vector3Int((int) x , (int) y, (int) z);
+					var tempVert1 = new Vector3Int(x , y, z);
 					Vector3 vert1 = tempVert1 + ChunkData.CornerTable[ChunkData.EdgeIndexes[indice, 0]] * simpleIncrement;
 					Vector3 vert2 = tempVert1 + ChunkData.CornerTable[ChunkData.EdgeIndexes[indice, 1]] * simpleIncrement;
 					Vector3 vertPosition;
@@ -386,25 +375,62 @@ public class MultiThreadingSupport : MonoBehaviour
 						vertPosition = (vert1 + vert2) / 2f;
 					}
 
-					// Add to our vertices and triangles list and incremement the edgeIndex.
+					// Add to our vertices and triangles list and increment the edgeIndex.
 					if (chunkDataReq.flatShading)
 					{
-						meshData.Vertices.Add(vertPosition);
-						meshData.Triangles.Add(meshData.Vertices.Count - 1);
+							meshData.Vertices.Add(vertPosition);
+							meshData.Triangles.Add(meshData.Vertices.Count - 1);
 					}
 					else
 					{
-						meshData.Triangles.Add(VertForIndice(vertPosition, meshData.Vertices));
+							meshData.Triangles.Add(VertForIndice(vertPosition, meshData.Vertices));
 					}
 
 					edgeIndex++;
 				}
 			}
-
-			continuation: ;
 		}
-		
+
+		meshData.Normals = CalculateNormals(meshData.Vertices, meshData.Triangles);
 		return meshData;
+	}
+
+	private static List<Vector3> CalculateNormals(IList<Vector3> vertices, IList<int> triangles)
+	{
+		var vertexNormals = new Vector3[vertices.Count];
+		
+		var triangleCount = triangles.Count / 3;
+		for (var i = 0; i < triangleCount; i++)
+		{
+			var normalTriangleIndex = i * 3;
+			var vertexIndexA = triangles[normalTriangleIndex];
+			var vertexIndexB = triangles[normalTriangleIndex + 1];
+			var vertexIndexC = triangles[normalTriangleIndex + 2];
+
+			var triangleNormal = SurfaceNormals(vertices, vertexIndexA, vertexIndexB, vertexIndexC);
+			vertexNormals[vertexIndexA] += triangleNormal;
+			vertexNormals[vertexIndexB] += triangleNormal;
+			vertexNormals[vertexIndexC] += triangleNormal;
+		}
+
+		for (var i = 0; i < vertexNormals.Length; i++)
+		{
+			vertexNormals[i].Normalize();
+		}
+
+		return vertexNormals.ToList();
+	}
+
+	private static Vector3 SurfaceNormals(IList<Vector3> vertices, int A, int B, int C)
+	{
+		var pointA = vertices[A];
+		var pointB = vertices[B];
+		var pointC = vertices[C];
+
+		var sideAB = pointB - pointA;
+		var sideAC = pointC - pointA;
+		
+		return Vector3.Cross(sideAB, sideAC).normalized;
 	}
 
 	private static float SampleTerrain(Vector3Int point, IReadOnlyList<float> terrainMap, ChunkDataRequested chunkDataReq)
@@ -425,75 +451,25 @@ public class MultiThreadingSupport : MonoBehaviour
 		return vertices.Count - 1;
     }
 	
-	// public void RequestEditTerrainMeshData(Action<MeshData> callback, MeshData meshData, ChunkDataRequested newChunkData, IEnumerable<Vector3> pos, float radious, float val)
-	// {
-	// 	void ThreadStart()
-	// 	{
-	// 		EditTerrainMeshDataThread(callback, newChunkData, meshData, pos, radious, val);
-	// 	}
-	// 	new Thread(ThreadStart).Start();
-	// }
-	//
-	// private void EditTerrainMeshDataThread(Action<MeshData> callback, ChunkDataRequested chunkDataReq, MeshData _meshData, IEnumerable<Vector3> pos, float radious, float val)
-	// {
-	// 	var meshData = EditTerrainMeshData(chunkDataReq, _meshData, pos, radious, val);
-	// 	lock (_chunkThreadInfoQueue)
-	// 	{
-	// 		_chunkThreadInfoQueue.Enqueue(new ChunkThreadInfo<MeshData>(callback, meshData));
-	// 	}
-	// }
-	//
-	// private MeshData EditTerrainMeshData(ChunkDataRequested chunkDataReq, MeshData meshData, IEnumerable<Vector3> pos, float radious, float val)
-	// {
-	// 	var width = chunkDataReq.Chunkwidth + 1;
-	// 	var height = chunkDataReq.ChunkHeight + 1 + chunkDataReq.chunkBelowZero;
-	// 	var chunkPos = chunkDataReq.ChunkPos;
-	// 	
-	// 	foreach (var v3Int in from i in pos
-	// 		where !(i.z < chunkPos.z) && !(i.z > chunkPos.z + chunkDataReq.Chunkwidth)
-	// 		where !(i.x < chunkPos.x) && !(i.x > chunkPos.x + chunkDataReq.Chunkwidth)
-	// 		where !(i.y < chunkPos.y + radious) &&
-	// 		      !(i.y > chunkPos.y + chunkDataReq.ChunkHeight * 2)
-	// 		select val > 0f
-	// 		? new Vector3Int(Mathf.FloorToInt(i.x) - chunkPos.x, Mathf.FloorToInt(i.y) - chunkPos.y,
-	// 			Mathf.FloorToInt(i.z) - chunkPos.z)
-	// 		: new Vector3Int(Mathf.CeilToInt(i.x) - chunkPos.x, Mathf.CeilToInt(i.y) - chunkPos.y,
-	// 			Mathf.CeilToInt(i.z) - chunkPos.z))
-	// 	{
-	// 		try
-	// 		{
-	// 			meshData.TerrainMap[v3Int.x * height * width + v3Int.y * width + v3Int.z] = val;
-	// 		}
-	// 		catch
-	// 		{
-	// 			// ignored
-	// 		}
-	// 	}
-	//
-	// 	return meshData;
-	// }
-	
-	
-	
-	public void RequestGetNeighbourChunksFromPos(Action<List<Chunk>> callback, ChunkDataRequested chunkDataReq, int width, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
+	public void RequestGetNeighbourChunksFromPos(Action<List<Chunk>> callback, ChunkDataRequested chunkDataReq, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
 	{
 		void ThreadStart()
 		{
-			GetNeighbourChunksFromPosThread(callback, chunkDataReq, width, radious, pos, hitPoint, _chunks, val);
+			GetNeighbourChunksFromPosThread(callback, chunkDataReq, radious, pos, hitPoint, _chunks, val);
 		}
 		new Thread(ThreadStart).Start();
 	}
 
-	private void GetNeighbourChunksFromPosThread(Action<List<Chunk>> callback, ChunkDataRequested chunkDataReq, int width, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
+	private void GetNeighbourChunksFromPosThread(Action<List<Chunk>> callback, ChunkDataRequested chunkDataReq, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
 	{
-		var chunks = GetNeighbourChunksFromPos(chunkDataReq, width, radious, pos, hitPoint, _chunks, val);
+		var chunks = GetNeighbourChunksFromPos(chunkDataReq, radious, pos, hitPoint, _chunks, val);
 		lock (_chunkListThreadInfo)
 		{
 			_chunkListThreadInfo.Enqueue(new ChunkListThreadInfo<List<Chunk>>(callback, chunks));
 		}
 	}
 	
-	private List<Chunk> GetNeighbourChunksFromPos(ChunkDataRequested chunkDataReq, int width, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
+	private List<Chunk> GetNeighbourChunksFromPos(ChunkDataRequested chunkDataReq, float radious, Vector3 pos, Vector3 hitPoint, Dictionary<Vector3Int, Chunk> _chunks, float val)
 	{
 		var posInt = new Vector3Int((int) hitPoint.x, (int) hitPoint.y, (int) hitPoint.z);
 		var gridPoints = new List<Vector3>();
