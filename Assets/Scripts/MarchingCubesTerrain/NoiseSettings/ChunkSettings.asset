@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   occlusion: 0
   limitThreads: 1
+  threadChunkEditing: 1
   seed: 255
-  viewDistance: 12
-  RealViewDistance: 120
-  maxNumberOfThreadsPerFrame: 3
+  viewDistance: 25
+  RealViewDistance: 300
+  maxNumberOfThreadsPerFrame: 24
   chunkScale: 1
   NoiseLayers:
   - enabled: 1
@@ -26,33 +27,43 @@ MonoBehaviour:
       strength: 1.89
       numLayers: 2
       baseRoughness: 1.04
-      roughness: 2.1
-      persistence: 1.083
+      roughness: 1.77
+      persistence: 1.019
       minValue: 0.596
+  - enabled: 1
+    useFirstLayerAsMask: 0
+    noiseSettings:
+      strength: 1.13
+      numLayers: 1
+      baseRoughness: 0.51
+      roughness: 2.52
+      persistence: 1.033
+      minValue: 1
   - enabled: 1
     useFirstLayerAsMask: 0
     noiseSettings:
       strength: 1.13
       numLayers: 3
       baseRoughness: 0.51
-      roughness: 1.14
-      persistence: 1
-      minValue: 1
-  controlLodDistance: 0
-  LOD: 0
-  chunkHeight: 250
+      roughness: 3.2
+      persistence: 1.951
+      minValue: 0.947
+  Lod: 0
+  heightMultiplier: 150
+  chunkHeight: 215
   chunkwidth: 10
   chunkBelowZero: 40
-  worldHeight: 285
-  amp: 2.72
-  freq: 0.2785
+  worldHeight: 250
+  amp: 6
+  freq: 0.2844
   terrainSurface: 0.18
-  caveThreshold: 25
-  caveAmpMult: 1.09
+  caveThreshold: 24
+  caveAmpMult: 3.5
   caveFreqMult: 8
   caveHeightLimited: 0
-  caveMaxHeight: 75
+  caveMaxHeight: 0
   smoothTerrain: 1
-  flatShading: 0
+  flatShading: 1
   allowEditing: 1
-  editingRadious: 10
+  editingRadious: 4
+  terrainShaderData: {fileID: 11400000, guid: 90652f69793f6a44db83c819adf90912, type: 2}
