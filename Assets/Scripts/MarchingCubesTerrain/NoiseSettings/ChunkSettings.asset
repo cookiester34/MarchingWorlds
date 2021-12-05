@@ -16,8 +16,8 @@ MonoBehaviour:
   limitThreads: 1
   threadChunkEditing: 1
   seed: 255
-  viewDistance: 25
-  RealViewDistance: 300
+  viewDistance: 30
+  RealViewDistance: 360
   maxNumberOfThreadsPerFrame: 24
   chunkScale: 1
   NoiseLayers:
@@ -48,12 +48,27 @@ MonoBehaviour:
       roughness: 3.2
       persistence: 1.951
       minValue: 0.947
-  Lod: 0
+  LodLayers:
+  - disabled: 0
+    Lod: 1
+    distance: 8
+  - disabled: 0
+    Lod: 2
+    distance: 15
+  - disabled: 0
+    Lod: 3
+    distance: 20
+  - disabled: 0
+    Lod: 4
+    distance: 25
+  - disabled: 0
+    Lod: 6
+    distance: 64
   heightMultiplier: 150
-  chunkHeight: 215
-  chunkwidth: 10
-  chunkBelowZero: 40
-  worldHeight: 250
+  chunkHeight: 180
+  chunkwidth: 12
+  chunkBelowZero: 0
+  worldHeight: 215
   amp: 6
   freq: 0.2844
   terrainSurface: 0.18
@@ -65,5 +80,5 @@ MonoBehaviour:
   smoothTerrain: 1
   flatShading: 1
   allowEditing: 1
-  editingRadious: 4
+  editingRadious: 5
   terrainShaderData: {fileID: 11400000, guid: 90652f69793f6a44db83c819adf90912, type: 2}

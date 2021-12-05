@@ -85,7 +85,7 @@ public class Chunk
 		ReRequestChunkData();
 	}
 
-	public Chunk(ChunkSettings chunkSettings, Vector3Int position, Material material, MultiThreadingSupport multiThreadingSupport, MultiThreadingSupport.MeshData meshData, Transform parent)
+	public Chunk(ChunkSettings chunkSettings, Vector3Int position, Material material, MultiThreadingSupport multiThreadingSupport, MultiThreadingSupport.MeshData meshData, Transform parent, int Lod)
 	{
 		_multiThreadingSupport = multiThreadingSupport;
 		_meshData = meshData;
@@ -93,6 +93,7 @@ public class Chunk
 		_chunkSettings = chunkSettings;
 		_scale = chunkSettings.chunkScale;
 		ChunkPos = _position;
+		LOD = Lod;
 
 		ChunkObject = new GameObject("Terrain Chunk: " + position)
 		{
@@ -170,9 +171,15 @@ public class Chunk
 
 	public void RecreateMesh()
 	{
-		_meshData.Triangles.Clear();
-		_meshData.Vertices.Clear();
+		chunkData.Lod = LOD;
+		if (_meshData != null)
+		{
+			_meshData.Triangles.Clear();
+			_meshData.Vertices.Clear();
+		}
+
 		_multiThreadingSupport.RequestMeshData(OnMeshDataReceived, _meshData, chunkData);
+		
 	}
 
 	private void BuildMesh(MultiThreadingSupport.MeshData meshData)
@@ -187,7 +194,7 @@ public class Chunk
 			_meshFilter.mesh = _mesh;
 			//_meshFilter.mesh.colors = meshData.colourMap.ToArray();
 		}
-		if (_meshCollider != null)
+		if (_meshCollider != null && LOD == 1)
 		 	_meshCollider.sharedMesh = _mesh;
 		if (ChunkObject != null)
 			ChunkObject.transform.localScale = new Vector3(_scale, _scale, _scale);
@@ -243,49 +250,6 @@ public class Chunk
 			ChunkGenerator.Instance.QueuedChunkUpdates.Add(temp);
 		}
 	}
-	
-
-	// public void EditTerrainThreaded(List<Vector3> pos, float val, int Lod)
-	// {
-	// 	var newChunkData = new MultiThreadingSupport.ChunkDataRequested
-	// 	{
-	// 		Chunkwidth = _chunkSettings.chunkwidth,
-	// 		ChunkHeight = _chunkSettings.chunkHeight,
-	// 		ChunkPos = _position,
-	// 		ChunkScale = _scale,
-	// 		WorldHeight = _chunkSettings.worldHeight,
-	// 		NoiseFilters = _noiseFilters,
-	// 		NoiseLayers = _chunkSettings.NoiseLayers,
-	// 		Freq = _chunkSettings.freq,
-	// 		Amp = _chunkSettings.amp,
-	// 		TerrainSurface = _chunkSettings.terrainSurface,
-	// 		smooth = _chunkSettings.smoothTerrain,
-	// 		flatShading = _chunkSettings.flatShading,
-	// 		caveThreshold = _chunkSettings.caveThreshold,
-	// 		caveAmp = _chunkSettings.caveAmpMult,
-	// 		caveFreq = _chunkSettings.caveFreqMult,
-	// 		caveHeightLimited = _chunkSettings.caveHeightLimited,
-	// 		caveMaxHeight = _chunkSettings.caveMaxHeight,
-	// 		chunkBelowZero = _chunkSettings.chunkBelowZero,
-	// 		controlLodDistance = _chunkSettings.controlLodDistance,
-	// 		Lod = Lod
-	// 	};
-	// 	
-	// 	_multiThreadingSupport.RequestEditTerrainMeshData(OnEditReturn, _meshData, newChunkData, pos, _chunkSettings.editingRadious, val);
-	// }
-	//
-	// private void OnEditReturn(MultiThreadingSupport.MeshData meshData)
-	// {
-	// 	if (!_meshUpdate)
-	// 	{
-	// 		_meshUpdate = true;
-	// 		_meshData = meshData;
-	// 		RecreateMesh(lod);
-	// 	}
-	// 	// _meshUpdate = false;
-	// 	// if (ChunkGenerator.Instance.updatingChunks.Contains(ChunkPos))
-	// 	// 	ChunkGenerator.Instance.updatingChunks.Remove(ChunkPos);
-	// }
 	
 	public void OnEditReturn()
 	{

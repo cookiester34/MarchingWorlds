@@ -14,7 +14,7 @@ public class ChunkSettings : ScriptableObject
 	[Range(1, 24)] public int maxNumberOfThreadsPerFrame = 8;
 	[HideInInspector] public int chunkScale = 1;
 	[SerializeField] public List<NoiseLayer> NoiseLayers;
-	[Range(0, 6)] public int Lod = 0;
+	[SerializeField] public List<LodLayer> LodLayers;
 	public float heightMultiplier = 13f;
 	[Range(150, 420)] public int chunkHeight = 250;
 	[Range(5, 18)] public int chunkwidth = 5;
@@ -40,5 +40,13 @@ public class ChunkSettings : ScriptableObject
 		public bool enabled;
 		public bool useFirstLayerAsMask;
 		public NoiseSettings noiseSettings;
+	}
+
+	[System.Serializable]
+	public class LodLayer
+	{
+		public bool disabled = false;
+		[Range(1, 6)] public int Lod = 0;
+		[Range(3, 64)] public int distance;
 	}
 }

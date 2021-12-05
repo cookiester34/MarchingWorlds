@@ -308,16 +308,17 @@ public class MultiThreadingSupport : MonoBehaviour
 
 	private MeshData CreateMeshData(ChunkDataRequested chunkDataReq, MeshData meshData)
 	{
-		var colourMap = new List<Color>();
-		var simpleIncrement = chunkDataReq.Lod == 0
-				? 1
-				: chunkDataReq.Lod * 2;
+		// var simpleIncrement = chunkDataReq.Lod == 0
+		// 		? 1
+		// 		: chunkDataReq.Lod * 2;
+		var simpleIncrement = chunkDataReq.Lod;
 
 		// Loop through each "cube" in our terrain.
-		for (var x = 0; x < chunkDataReq.Chunkwidth - simpleIncrement + 1; x+=simpleIncrement)
-		for (var y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight  - simpleIncrement + 1; y+=simpleIncrement)
-		for (var z = 0; z < chunkDataReq.Chunkwidth  - simpleIncrement + 1; z+=simpleIncrement)
+		for (var x = 0; x < chunkDataReq.Chunkwidth; x+=simpleIncrement)
+		for (var y = -chunkDataReq.chunkBelowZero; y < chunkDataReq.ChunkHeight; y+=simpleIncrement)
+		for (var z = 0; z < chunkDataReq.Chunkwidth; z+=simpleIncrement)
 		{
+			
 			// Create an array of floats representing each corner of a cube and get the value from our terrainMap.
 			var cube = new float[8];
 			var configurationIndex = 0;
@@ -334,11 +335,9 @@ public class MultiThreadingSupport : MonoBehaviour
 				if (sampleTerrain > chunkDataReq.TerrainSurface)
 					configurationIndex |= 1 << i;
 			}
-			
-			var configIndex = configurationIndex;
 
 			// If the configuration of this cube is 0 or 255 (completely inside the terrain or completely outside of it) we don't need to do anything.
-			if (configIndex is 0 or 255) continue;
+			if (configurationIndex is 0 or 255) continue;
 
 			// Loop through the triangles. There are never more than 5 triangles to a cube and only three vertices to a triangle.
 			var edgeIndex = 0;
@@ -347,7 +346,7 @@ public class MultiThreadingSupport : MonoBehaviour
 				for (var p = 0; p < 3; p++)
 				{
 					// Get the current indice. We increment triangleIndex through each loop.
-					var indice = ChunkData.TriangleTable[configIndex, edgeIndex];
+					var indice = ChunkData.TriangleTable[configurationIndex, edgeIndex];
 
 					// If the current edgeIndex is -1, there are no more indices and we can exit the function.
 					if (indice == -1)
