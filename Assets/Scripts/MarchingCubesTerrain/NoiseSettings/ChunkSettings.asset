@@ -16,9 +16,9 @@ MonoBehaviour:
   limitThreads: 1
   threadChunkEditing: 1
   seed: 255
-  viewDistance: 30
-  RealViewDistance: 360
-  maxNumberOfThreadsPerFrame: 24
+  viewDistance: 15
+  RealViewDistance: 150
+  maxNumberOfThreadsPerFrame: 8
   chunkScale: 1
   NoiseLayers:
   - enabled: 1
@@ -51,24 +51,24 @@ MonoBehaviour:
   LodLayers:
   - disabled: 0
     Lod: 1
-    distance: 8
-  - disabled: 0
+    distance: 14
+  - disabled: 1
     Lod: 2
-    distance: 15
-  - disabled: 0
+    distance: 20
+  - disabled: 1
     Lod: 3
     distance: 20
-  - disabled: 0
+  - disabled: 1
     Lod: 4
     distance: 25
-  - disabled: 0
+  - disabled: 1
     Lod: 6
     distance: 64
   heightMultiplier: 150
-  chunkHeight: 180
-  chunkwidth: 12
+  chunkHeight: 420
+  chunkwidth: 10
   chunkBelowZero: 0
-  worldHeight: 215
+  worldHeight: 455
   amp: 6
   freq: 0.2844
   terrainSurface: 0.18
@@ -80,5 +80,7 @@ MonoBehaviour:
   smoothTerrain: 1
   flatShading: 1
   allowEditing: 1
-  editingRadious: 5
+  editingRadious: 30
   terrainShaderData: {fileID: 11400000, guid: 90652f69793f6a44db83c819adf90912, type: 2}
+  planet: 1
+  planetSize: 150

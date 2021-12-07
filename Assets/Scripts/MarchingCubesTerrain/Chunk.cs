@@ -79,7 +79,9 @@ public class Chunk
 			caveMaxHeight = _chunkSettings.caveMaxHeight,
 			chunkBelowZero = _chunkSettings.chunkBelowZero,
 			Lod = LOD,
-			heightMultiplier = _chunkSettings.heightMultiplier
+			heightMultiplier = _chunkSettings.heightMultiplier,
+			planet = _chunkSettings.planet,
+			planetSize = _chunkSettings.planetSize
 		};
 		
 		ReRequestChunkData();
@@ -138,7 +140,9 @@ public class Chunk
 			caveMaxHeight = _chunkSettings.caveMaxHeight,
 			chunkBelowZero = _chunkSettings.chunkBelowZero,
 			Lod = LOD,
-			heightMultiplier = _chunkSettings.heightMultiplier
+			heightMultiplier = _chunkSettings.heightMultiplier,
+			planet = _chunkSettings.planet,
+			planetSize = _chunkSettings.planetSize
 		};
 		
 		BuildMesh(meshData);
@@ -185,19 +189,25 @@ public class Chunk
 	private void BuildMesh(MultiThreadingSupport.MeshData meshData)
 	{
 		_mesh.Clear();
-		_mesh.vertices = meshData.Vertices.ToArray();
-		_mesh.triangles = meshData.Triangles.ToArray();
-		_mesh.normals = meshData.Normals.ToArray();
-		//_mesh.RecalculateNormals();
-		if(_meshFilter != null)
+		if(meshData.Triangles.Count > 0)
 		{
-			_meshFilter.mesh = _mesh;
-			//_meshFilter.mesh.colors = meshData.colourMap.ToArray();
+			_mesh.vertices = meshData.Vertices.ToArray();
+			_mesh.triangles = meshData.Triangles.ToArray();
+			if(meshData.Normals.Count == meshData.Vertices.Count)
+				_mesh.normals = meshData.Normals.ToArray();
+			//_mesh.RecalculateNormals();
+			if (_meshFilter != null)
+			{
+				_meshFilter.mesh = _mesh;
+				//_meshFilter.mesh.colors = meshData.colourMap.ToArray();
+			}
+
+			if (_meshCollider != null && LOD == 1)
+				_meshCollider.sharedMesh = _mesh;
+			if (ChunkObject != null)
+				ChunkObject.transform.localScale = new Vector3(_scale, _scale, _scale);
 		}
-		if (_meshCollider != null && LOD == 1)
-		 	_meshCollider.sharedMesh = _mesh;
-		if (ChunkObject != null)
-			ChunkObject.transform.localScale = new Vector3(_scale, _scale, _scale);
+		
 		if (!ChunkGenerator.Instance.CreatedMeshes.ContainsKey(_position))
 			ChunkGenerator.Instance.CreatedMeshes.Add(_position, _meshData);
 		if(ChunkGenerator.Instance.threadingChunks)

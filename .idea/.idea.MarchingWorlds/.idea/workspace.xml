@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/MultiThreadingSupport.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/MultiThreadingSupport.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/MarchingCubesTerrain/NoiseSettings/ChunkSettings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UserSettings/Layouts/default-2021.dwlt" beforeDir="false" afterPath="$PROJECT_DIR$/UserSettings/Layouts/default-2021.dwlt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,6 +91,8 @@
       <workItem from="1638448278389" duration="14762000" />
       <workItem from="1638619434132" duration="28986000" />
       <workItem from="1638699201065" duration="17380000" />
+      <workItem from="1638880088191" duration="3668000" />
+      <workItem from="1638896524312" duration="1998000" />
     </task>
     <servers />
   </component>

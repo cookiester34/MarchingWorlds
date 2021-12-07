@@ -134,7 +134,11 @@ public class ChunkGenerator : MonoBehaviour
                 var dis = Vector2.Distance(viewerPosition, new Vector2(pos.x, pos.z));
                 if (dis < chunkSettings.RealViewDistance && OnScreen(pos) || dis < chunkSettings.chunkwidth * 4)
                 {
-                    var currentLod = (from lodLayer in chunkSettings.LodLayers where !lodLayer.disabled where dis < lodLayer.distance * chunkSettings.chunkwidth select lodLayer.Lod).FirstOrDefault();
+                    var currentLod = 1; // this cannot be 0. will cause an infinite loop in threads
+                    foreach (var lodLayer in chunkSettings.LodLayers.Where(lodLayer => !lodLayer.disabled).Where(lodLayer => dis <= lodLayer.distance * chunkSettings.chunkwidth))
+                    {
+                        currentLod = lodLayer.Lod;
+                    }
 
                     if (_chunks.ContainsKey(pos))
                     {
@@ -230,7 +234,9 @@ public class ChunkGenerator : MonoBehaviour
                 caveMaxHeight = chunkSettings.caveMaxHeight,
                 chunkBelowZero = chunkSettings.chunkBelowZero,
                 Lod = 0,
-                heightMultiplier = chunkSettings.heightMultiplier
+                heightMultiplier = chunkSettings.heightMultiplier,
+                planet = chunkSettings.planet,
+                planetSize = chunkSettings.planetSize
             };
             MultiThreadingSupport.Instance.RequestGetNeighbourChunksFromPos(EditEffectedChunks, _newChunkData,
                 chunkSettings.editingRadious, hit.transform.position, hit.point, _chunks,

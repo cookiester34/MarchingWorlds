@@ -16,7 +16,7 @@ public class ChunkSettings : ScriptableObject
 	[SerializeField] public List<NoiseLayer> NoiseLayers;
 	[SerializeField] public List<LodLayer> LodLayers;
 	public float heightMultiplier = 13f;
-	[Range(150, 420)] public int chunkHeight = 250;
+	[Range(150, 300)] public int chunkHeight = 250;
 	[Range(5, 18)] public int chunkwidth = 5;
 	[Range(0, 150)] public int chunkBelowZero = 30;
 	[HideInInspector] public float worldHeight = 275;
@@ -27,12 +27,14 @@ public class ChunkSettings : ScriptableObject
 	[Range(0.1f, 8f)] public float caveAmpMult = 1.6f;
 	[Range(0.1f, 8f)] public float caveFreqMult = 0.13f;
 	public bool caveHeightLimited = false;
-	[Range(0, 420)] public float caveMaxHeight = 75f;
+	[Range(0, 300)] public float caveMaxHeight = 75f;
 	public bool smoothTerrain = false;
 	public bool flatShading = false;
 	public bool allowEditing = false;
 	public float editingRadious = 2f;
 	public TerrainShaderData terrainShaderData;
+	public bool planet = false;
+	public float planetSize = 50f;
 
 	[System.Serializable]
 	public class NoiseLayer

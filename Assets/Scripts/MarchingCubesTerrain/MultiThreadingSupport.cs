@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine;
 using static UnityEngine.Debug;
 
@@ -110,6 +111,8 @@ public class MultiThreadingSupport : MonoBehaviour
 		public int chunkBelowZero;
 		public int Lod;
 		public float heightMultiplier;
+		public bool planet;
+		public float planetSize;
 	}
 
 	public void RequestChunkData(Action<MeshData> callback, ChunkDataRequested newChunkData)
@@ -260,11 +263,11 @@ public class MultiThreadingSupport : MonoBehaviour
 
 			//var point = 0f;
 			
-			if (y > chunkDataReq.ChunkHeight - 1)
+			if (y > chunkDataReq.ChunkHeight - 1 && !chunkDataReq.planet)
 			{
 				point = 1f;
 			}
-			else if (y < -chunkDataReq.chunkBelowZero + 1)
+			else if (y < -chunkDataReq.chunkBelowZero + 1 && !chunkDataReq.planet)
 			{
 				point = 0f;
 			}
@@ -273,13 +276,22 @@ public class MultiThreadingSupport : MonoBehaviour
 				var point2 = chunkDataReq.heightMultiplier * Mathf.PerlinNoise(
 					((float) x + chunkDataReq.ChunkPos.x / chunkDataReq.ChunkScale) / 96f * chunkDataReq.Freq + 81f,
 					((float) z + chunkDataReq.ChunkPos.z / chunkDataReq.ChunkScale) / 64f * chunkDataReq.Freq - 81f);
-
+				
 				point2 = y - point2;
 				point = y - point;
 
-				point = (point2 + point) / 2;
+				if(!chunkDataReq.planet)
+				{
+					point = (point2 + point) / 2;
+				}
 				
-				
+				var center = new Vector3(0, 100, 0);
+				var diff = new Vector3(center.x - noisePos.x, center.y - noisePos.y, center.z - noisePos.z);
+				var dist = math.sqrt(math.pow(diff.x, 2f) + math.pow(diff.y, 2f) + math.pow(diff.z, 2f));
+				if (dist > chunkDataReq.planetSize && chunkDataReq.planet)
+				{
+					point = 1;
+				}
 				
 				var pointCave = CalculateNoiseVal(noisePos, chunkDataReq.NoiseFilters, chunkDataReq.NoiseLayers,
 					chunkDataReq.Freq * chunkDataReq.caveFreq, chunkDataReq.Amp * chunkDataReq.caveAmp, chunkDataReq.WorldHeight);
@@ -290,7 +302,6 @@ public class MultiThreadingSupport : MonoBehaviour
 					if(y < chunkDataReq.caveMaxHeight)
 						point = pointCave < chunkDataReq.caveThreshold ? 1 : point;
 				}
-
 			}
 
 			var tempHeight = height + chunkDataReq.chunkBelowZero;
@@ -308,10 +319,8 @@ public class MultiThreadingSupport : MonoBehaviour
 
 	private MeshData CreateMeshData(ChunkDataRequested chunkDataReq, MeshData meshData)
 	{
-		// var simpleIncrement = chunkDataReq.Lod == 0
-		// 		? 1
-		// 		: chunkDataReq.Lod * 2;
-		var simpleIncrement = chunkDataReq.Lod;
+		//Warning chunk Lod cannot be 0, will cause infinite loop
+		var simpleIncrement = chunkDataReq.Lod == 0 ? 1: chunkDataReq.Lod;
 
 		// Loop through each "cube" in our terrain.
 		for (var x = 0; x < chunkDataReq.Chunkwidth; x+=simpleIncrement)
